@@ -1,5 +1,6 @@
 package com.tolou.mony.data.network
 
+import com.tolou.mony.BuildConfig
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -10,12 +11,15 @@ object RetrofitInstance {
     // ⚠️ Change this later to your real backend URL
     private const val BASE_URL = "https://your-backend-url.com/"
 
-    private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
-    }
-
     private val client = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
+        .apply {
+            if (BuildConfig.DEBUG) {
+                val loggingInterceptor = HttpLoggingInterceptor().apply {
+                    level = HttpLoggingInterceptor.Level.BODY
+                }
+                addInterceptor(loggingInterceptor)
+            }
+        }
         .build()
 
     val retrofit: Retrofit by lazy {

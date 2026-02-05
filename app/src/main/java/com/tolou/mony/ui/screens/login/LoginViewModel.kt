@@ -5,10 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tolou.mony.ui.data.AuthApi
 import com.tolou.mony.ui.data.AuthRepository
-import com.tolou.mony.ui.data.SendOtpRequest
-import com.tolou.mony.ui.data.VerifyOtpRequest
 import kotlinx.coroutines.launch
 
 
@@ -35,7 +32,7 @@ class LoginViewModel(
                 repository.sendOtp(phone)
                 state = LoginState.CodeSent(phone)
             } catch (e: Exception) {
-                state = LoginState.Error("Failed to send code")
+                state = LoginState.Error(e.localizedMessage ?: "Failed to send code")
             }
         }
     }
@@ -47,10 +44,9 @@ class LoginViewModel(
                 repository.verifyOtp(phone, code)
                 state = LoginState.LoggedIn
             } catch (e: Exception) {
-                state = LoginState.Error("Invalid code")
+                state = LoginState.Error(e.localizedMessage ?: "Invalid code")
             }
         }
     }
 }
-
 

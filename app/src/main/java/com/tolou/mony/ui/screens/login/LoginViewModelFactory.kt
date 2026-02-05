@@ -1,17 +1,17 @@
-package com.tolou.mony.ui.screens.main
+package com.tolou.mony.ui.screens.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.tolou.mony.data.ExpenseDao
+import com.tolou.mony.ui.data.AuthRepository
 
-class MainViewModelFactory(
-    private val expenseDao: ExpenseDao
+class LoginViewModelFactory(
+    private val repository: AuthRepository
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return MainViewModel(expenseDao) as T
+            return LoginViewModel(repository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }

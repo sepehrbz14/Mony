@@ -9,10 +9,17 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun VerifyCodeScreen(
     phone: String,
-    viewModel: LoginViewModel
+    viewModel: LoginViewModel,
+    onVerified: () -> Unit
 ) {
     var code by remember { mutableStateOf("") }
     val state = viewModel.state
+
+    LaunchedEffect(state) {
+        if (state is LoginState.LoggedIn) {
+            onVerified()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -39,10 +46,11 @@ fun VerifyCodeScreen(
             enabled = state !is LoginState.Verifying,
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (state is LoginState.Verifying)
+            if (state is LoginState.Verifying) {
                 CircularProgressIndicator(modifier = Modifier.size(20.dp))
-            else
+            } else {
                 Text("Verify")
+            }
         }
 
         if (state is LoginState.Error) {

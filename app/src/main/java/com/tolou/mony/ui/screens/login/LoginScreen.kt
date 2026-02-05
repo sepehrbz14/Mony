@@ -9,10 +9,17 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel
+    viewModel: LoginViewModel,
+    onCodeSent: (String) -> Unit
 ) {
     var phone by remember { mutableStateOf("") }
     val state = viewModel.state
+
+    LaunchedEffect(state) {
+        if (state is LoginState.CodeSent) {
+            onCodeSent(state.phone)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -39,10 +46,11 @@ fun LoginScreen(
             enabled = state !is LoginState.SendingCode,
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (state is LoginState.SendingCode)
+            if (state is LoginState.SendingCode) {
                 CircularProgressIndicator(modifier = Modifier.size(20.dp))
-            else
+            } else {
                 Text("Send Code")
+            }
         }
 
         if (state is LoginState.Error) {
@@ -51,4 +59,3 @@ fun LoginScreen(
         }
     }
 }
-
