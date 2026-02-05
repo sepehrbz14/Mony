@@ -20,7 +20,7 @@ class MainViewModel(
             initialValue = emptyList()
         )
 
-    fun addExpense(title: String, amount: Int) {
+    fun addExpense(title: String, amount: Long) {
         viewModelScope.launch {
             expenseDao.insert(
                 Expense(
@@ -32,7 +32,7 @@ class MainViewModel(
         }
     }
 
-    fun totalSpending(): Int {
+    fun totalSpending(): Long {
         return expenses.value.sumOf { it.amount }
     }
 }

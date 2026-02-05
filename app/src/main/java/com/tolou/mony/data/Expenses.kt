@@ -9,7 +9,6 @@ data class Expense(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val title: String,
-    val amount: Int,
+    val amount: Long,
     val timestamp: Long = System.currentTimeMillis()
 )
-
