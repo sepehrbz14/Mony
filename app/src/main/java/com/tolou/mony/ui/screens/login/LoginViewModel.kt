@@ -37,6 +37,12 @@ class LoginViewModel(
         }
     }
 
+    fun consumeCodeSent() {
+        if (state is LoginState.CodeSent) {
+            state = LoginState.EnterPhone
+        }
+    }
+
     fun verifyCode(phone: String, code: String) {
         viewModelScope.launch {
             state = LoginState.Verifying
@@ -48,5 +54,10 @@ class LoginViewModel(
             }
         }
     }
-}
 
+    fun consumeLoggedIn() {
+        if (state is LoginState.LoggedIn) {
+            state = LoginState.EnterPhone
+        }
+    }
+}
