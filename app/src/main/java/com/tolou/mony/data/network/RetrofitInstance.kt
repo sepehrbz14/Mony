@@ -8,8 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
 
-    // ⚠️ Change this later to your real backend URL
-    private const val BASE_URL = "https://your-backend-url.com/"
+    private const val BASE_URL = "https://api.sms.ir/v1/"
 
     private val client = OkHttpClient.Builder()
         .apply {

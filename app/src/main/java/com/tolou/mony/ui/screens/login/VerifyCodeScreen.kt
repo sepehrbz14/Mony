@@ -47,6 +47,7 @@ fun VerifyCodeScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text("Enter verification code", style = MaterialTheme.typography.titleLarge)
+        Text("Sent to $phone", style = MaterialTheme.typography.bodyMedium)
 
         Spacer(Modifier.height(16.dp))
 
@@ -62,7 +63,7 @@ fun VerifyCodeScreen(
         Spacer(Modifier.height(16.dp))
 
         Button(
-            onClick = { viewModel.verifyCode(phone, code) },
+            onClick = { viewModel.verifyCode(code) },
             enabled = state !is LoginState.Verifying,
             modifier = Modifier.fillMaxWidth()
         ) {

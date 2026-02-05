@@ -25,11 +25,15 @@ class LoginViewModel(
     var state by mutableStateOf<LoginState>(LoginState.EnterPhone)
         private set
 
+    private var sentCode: String? = null
+
     fun sendCode(phone: String) {
         viewModelScope.launch {
             state = LoginState.SendingCode
             try {
-                repository.sendOtp(phone)
+                val code = generateOtpCode()
+                repository.sendOtp(phone, code)
+                sentCode = code
                 state = LoginState.CodeSent(phone)
             } catch (e: Exception) {
                 state = LoginState.Error(e.localizedMessage ?: "Failed to send code")
@@ -43,14 +47,14 @@ class LoginViewModel(
         }
     }
 
-    fun verifyCode(phone: String, code: String) {
+    fun verifyCode(code: String) {
         viewModelScope.launch {
             state = LoginState.Verifying
-            try {
-                repository.verifyOtp(phone, code)
+            val expected = sentCode
+            if (expected != null && expected == code) {
                 state = LoginState.LoggedIn
-            } catch (e: Exception) {
-                state = LoginState.Error(e.localizedMessage ?: "Invalid code")
+            } else {
+                state = LoginState.Error("Invalid code")
             }
         }
     }
@@ -59,5 +63,9 @@ class LoginViewModel(
         if (state is LoginState.LoggedIn) {
             state = LoginState.EnterPhone
         }
+    }
+
+    private fun generateOtpCode(): String {
+        return (10000..99999).random().toString()
     }
 }
