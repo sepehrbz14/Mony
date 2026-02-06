@@ -1,13 +1,11 @@
 package com.tolou.mony.data
 
+import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import android.content.Context
-import com.tolou.mony.data.Expense
-import com.tolou.mony.data.ExpenseDao
 
-@Database(entities = [Expense::class], version = 1)
+@Database(entities = [Expense::class], version = 2)
 abstract class ExpenseDatabase : RoomDatabase() {
     abstract fun expenseDao(): ExpenseDao
 
@@ -20,7 +18,9 @@ abstract class ExpenseDatabase : RoomDatabase() {
                     context.applicationContext,
                     ExpenseDatabase::class.java,
                     "expense_db"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }

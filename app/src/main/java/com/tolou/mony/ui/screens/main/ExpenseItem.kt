@@ -10,9 +10,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.tolou.mony.data.Expense
+import java.text.NumberFormat
 
 @Composable
 fun ExpenseItem(expense: Expense) {
+    val formattedAmount = NumberFormat.getCurrencyInstance().format(expense.amount)
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -23,7 +25,7 @@ fun ExpenseItem(expense: Expense) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(expense.title)
-            Text("$${expense.amount}")
+            Text(formattedAmount)
         }
     }
 }
