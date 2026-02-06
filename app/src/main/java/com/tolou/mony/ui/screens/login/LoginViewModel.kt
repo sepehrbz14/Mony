@@ -5,10 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tolou.mony.ui.data.AuthApi
 import com.tolou.mony.ui.data.AuthRepository
-import com.tolou.mony.ui.data.SendOtpRequest
-import com.tolou.mony.ui.data.VerifyOtpRequest
 import kotlinx.coroutines.launch
 
 
@@ -28,29 +25,47 @@ class LoginViewModel(
     var state by mutableStateOf<LoginState>(LoginState.EnterPhone)
         private set
 
+    private var sentCode: String? = null
+
     fun sendCode(phone: String) {
         viewModelScope.launch {
             state = LoginState.SendingCode
             try {
-                repository.sendOtp(phone)
+                val code = generateOtpCode()
+                repository.sendOtp(phone, code)
+                sentCode = code
                 state = LoginState.CodeSent(phone)
             } catch (e: Exception) {
-                state = LoginState.Error("Failed to send code")
+                state = LoginState.Error(e.localizedMessage ?: "Failed to send code")
             }
         }
     }
 
-    fun verifyCode(phone: String, code: String) {
+    fun consumeCodeSent() {
+        if (state is LoginState.CodeSent) {
+            state = LoginState.EnterPhone
+        }
+    }
+
+    fun verifyCode(code: String) {
         viewModelScope.launch {
             state = LoginState.Verifying
-            try {
-                repository.verifyOtp(phone, code)
+            val expected = sentCode
+            if (expected != null && expected == code) {
                 state = LoginState.LoggedIn
-            } catch (e: Exception) {
+            } else {
                 state = LoginState.Error("Invalid code")
             }
         }
     }
+
+    fun consumeLoggedIn() {
+        if (state is LoginState.LoggedIn) {
+            state = LoginState.EnterPhone
+        }
+    }
+
+    private fun generateOtpCode(): String {
+        return (10000..99999).random().toString()
+    }
 }
-
-
