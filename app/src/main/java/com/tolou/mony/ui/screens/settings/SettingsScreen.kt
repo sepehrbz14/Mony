@@ -13,7 +13,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun SettingsScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onLogout: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -26,6 +27,12 @@ fun SettingsScreen(
 
         Button(onClick = onBack) {
             Text("Back")
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Button(onClick = onLogout) {
+            Text("Log out")
         }
     }
 }

@@ -1,63 +1,95 @@
 package com.tolou.mony.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.tolou.mony.data.ExpenseDatabase
+import androidx.compose.ui.platform.LocalContext
+import com.tolou.mony.data.SessionStorage
+import com.tolou.mony.data.network.AuthApi
+import com.tolou.mony.data.network.ExpenseApi
 import com.tolou.mony.data.network.RetrofitInstance
-import com.tolou.mony.ui.data.AuthApi
+import com.tolou.mony.data.network.SmsApi
+import com.tolou.mony.data.network.SmsRetrofitInstance
 import com.tolou.mony.ui.data.AuthRepository
+import com.tolou.mony.ui.data.ExpenseRepository
+import com.tolou.mony.ui.data.SmsRepository
 import com.tolou.mony.ui.screens.login.LoginScreen
+import com.tolou.mony.ui.screens.login.LoginState
 import com.tolou.mony.ui.screens.login.LoginViewModel
 import com.tolou.mony.ui.screens.login.LoginViewModelFactory
 import com.tolou.mony.ui.screens.login.VerifyCodeScreen
 import com.tolou.mony.ui.screens.main.MainScreen
+import com.tolou.mony.ui.screens.main.MainViewModel
+import com.tolou.mony.ui.screens.main.MainViewModelFactory
 import com.tolou.mony.ui.screens.settings.SettingsScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun AppNavGraph(
-    database: ExpenseDatabase
+    onLoggedOut: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     val navController = rememberNavController()
+    val sessionStorage = remember { SessionStorage(context) }
     val authRepository = remember {
         AuthRepository(
-            RetrofitInstance.retrofit.create(AuthApi::class.java)
+            RetrofitInstance.retrofit.create(AuthApi::class.java),
+            sessionStorage
         )
     }
-    val authViewModelFactory = remember { LoginViewModelFactory(authRepository) }
+    val smsRepository = remember {
+        SmsRepository(
+            SmsRetrofitInstance.retrofit.create(SmsApi::class.java)
+        )
+    }
+    val authViewModelFactory = remember { LoginViewModelFactory(authRepository, smsRepository) }
+    val expenseRepository = remember {
+        ExpenseRepository(
+            RetrofitInstance.retrofit.create(ExpenseApi::class.java),
+            authRepository
+        )
+    }
+
+    val startDestination = if (authRepository.token().isNullOrBlank()) {
+        NavRoutes.Login.route
+    } else {
+        NavRoutes.Main.route
+    }
 
     NavHost(
         navController = navController,
-        startDestination = NavRoutes.Login.route
+        startDestination = startDestination
     ) {
 
         // LOGIN (enter phone)
         composable(NavRoutes.Login.route) {
             val viewModel: LoginViewModel = viewModel(factory = authViewModelFactory)
+            LaunchedEffect(viewModel.state) {
+                if (viewModel.state is LoginState.CodeSent) {
+                    viewModel.consumeCodeSent()
+                    navController.navigate(NavRoutes.Verify.route)
+                }
+            }
             LoginScreen(
                 viewModel = viewModel,
-                onCodeSent = { phone ->
+                onLoggedIn = {
                     navController.navigate(
-                        NavRoutes.Verify.createRoute(phone)
-                    )
+                        NavRoutes.Main.route
+                    ) {
+                        popUpTo(NavRoutes.Login.route) {
+                            inclusive = true
+                        }
+                    }
                 }
             )
+
         }
 
-        // VERIFY OTP
-        composable(
-            route = NavRoutes.Verify.route,
-            arguments = listOf(
-                navArgument("phone") {
-                    type = NavType.StringType
-                }
-            )
-        ) { backStackEntry ->
+        // VERIFY SIGNUP OTP
+        composable(NavRoutes.Verify.route) {
             val parentEntry = remember(navController) {
                 navController.getBackStackEntry(NavRoutes.Login.route)
             }
@@ -65,12 +97,7 @@ fun AppNavGraph(
                 parentEntry,
                 factory = authViewModelFactory
             )
-            val phone = requireNotNull(backStackEntry.arguments?.getString("phone")) {
-                "Phone number missing from verification route."
-            }
-
             VerifyCodeScreen(
-                phone = phone,
                 viewModel = viewModel,
                 onVerified = {
                     navController.navigate(NavRoutes.Main.route) {
@@ -78,14 +105,18 @@ fun AppNavGraph(
                             inclusive = true
                         }
                     }
-                }
+                },
+                onBack = { navController.popBackStack() }
             )
         }
 
         // MAIN
         composable(NavRoutes.Main.route) {
+            val viewModel: MainViewModel = viewModel(
+                factory = MainViewModelFactory(expenseRepository)
+            )
             MainScreen(
-                database = database,
+                viewModel = viewModel,
                 onSettingsClick = {
                     navController.navigate(NavRoutes.Settings.route)
                 }
@@ -95,8 +126,15 @@ fun AppNavGraph(
         // SETTINGS
         composable(NavRoutes.Settings.route) {
             SettingsScreen(
-                onBack = {
-                    navController.popBackStack()
+                onBack = { navController.popBackStack() },
+                onLogout = {
+                    authRepository.clearSession()
+                    onLoggedOut()
+                    navController.navigate(NavRoutes.Login.route) {
+                        popUpTo(NavRoutes.Main.route) {
+                            inclusive = true
+                        }
+                    }
                 }
             )
         }

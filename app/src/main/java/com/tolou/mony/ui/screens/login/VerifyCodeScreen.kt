@@ -26,9 +26,9 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun VerifyCodeScreen(
-    phone: String,
     viewModel: LoginViewModel,
-    onVerified: () -> Unit
+    onVerified: () -> Unit,
+    onBack: () -> Unit
 ) {
     var code by remember { mutableStateOf("") }
     val state = viewModel.state
@@ -46,8 +46,7 @@ fun VerifyCodeScreen(
             .padding(24.dp),
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Enter verification code", style = MaterialTheme.typography.titleLarge)
-        Text("Sent to $phone", style = MaterialTheme.typography.bodyMedium)
+        Text("Enter signup code", style = MaterialTheme.typography.titleLarge)
 
         Spacer(Modifier.height(16.dp))
 
@@ -63,15 +62,24 @@ fun VerifyCodeScreen(
         Spacer(Modifier.height(16.dp))
 
         Button(
-            onClick = { viewModel.verifyCode(code) },
-            enabled = state !is LoginState.Verifying,
+            onClick = { viewModel.verifySignupCode(code) },
+            enabled = state !is LoginState.Loading,
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (state is LoginState.Verifying) {
+            if (state is LoginState.Loading) {
                 CircularProgressIndicator(modifier = Modifier.size(20.dp))
             } else {
-                Text("Verify")
+                Text("Verify & Create Account")
             }
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        Button(
+            onClick = onBack,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Back")
         }
 
         if (state is LoginState.Error) {
