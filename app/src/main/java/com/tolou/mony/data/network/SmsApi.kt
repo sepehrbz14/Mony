@@ -1,4 +1,4 @@
-package com.tolou.mony.ui.data
+package com.tolou.mony.data.network
 
 import retrofit2.http.Body
 import retrofit2.http.Headers
@@ -26,7 +26,7 @@ data class OtpResponseData(
     val cost: Double
 )
 
-interface AuthApi {
+interface SmsApi {
 
     @Headers("x-api-key: wl9LoHhuF758JhPwVq1YehXlynuUx89asxLsFeFUNxiUvgnW")
     @POST("send/verify")

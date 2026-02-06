@@ -4,7 +4,5 @@ sealed class NavRoutes(val route: String) {
     object Login : NavRoutes("login")
     object Main : NavRoutes("main")
     object Settings : NavRoutes("settings")
-    object Verify : NavRoutes("verify/{phone}") {
-        fun createRoute(phone: String) = "verify/$phone"
-    }
+    object Verify : NavRoutes("verify")
 }

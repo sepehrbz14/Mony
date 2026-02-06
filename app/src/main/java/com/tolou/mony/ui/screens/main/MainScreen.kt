@@ -13,23 +13,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tolou.mony.data.ExpenseDatabase
-
 
 
 @Composable
 fun MainScreen(
-    database: ExpenseDatabase,
+    viewModel: MainViewModel,
     onSettingsClick: () -> Unit
 ) {
-    val viewModel: MainViewModel = viewModel(
-        factory = MainViewModelFactory(database.expenseDao())
-    )
-    val expenses by viewModel.expenses.collectAsState()
-    val total = viewModel.totalSpending()
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.refresh()
+    }
 
     Column(
         modifier = Modifier
@@ -45,18 +43,22 @@ fun MainScreen(
                 Text("Settings")
             }
         }
-        TotalSpendingCard(total = total)
+        TotalSpendingCard(total = viewModel.totalSpending(uiState.expenses))
         AddExpenseSection(
             viewModel = viewModel
         )
 
-        if (expenses.isEmpty()) {
+        if (uiState.isLoading) {
+            Text("Loading expenses…")
+        } else if (uiState.error != null) {
+            Text(uiState.error ?: "Something went wrong.")
+        } else if (uiState.expenses.isEmpty()) {
             Text("No expenses yet. Add your first one above.")
         } else {
             LazyColumn(
                 modifier = Modifier.weight(1f)
             ) {
-                items(expenses) { expense ->
+                items(uiState.expenses) { expense ->
                     ExpenseItem(expense = expense)
                 }
             }

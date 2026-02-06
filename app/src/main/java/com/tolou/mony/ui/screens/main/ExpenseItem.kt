@@ -9,11 +9,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.tolou.mony.data.Expense
+import com.tolou.mony.data.network.ExpenseResponse
 import java.text.NumberFormat
 
 @Composable
-fun ExpenseItem(expense: Expense) {
+fun ExpenseItem(expense: ExpenseResponse) {
     val formattedAmount = NumberFormat.getCurrencyInstance().format(expense.amount)
     Card(
         modifier = Modifier

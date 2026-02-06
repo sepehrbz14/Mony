@@ -23,28 +23,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
-    onCodeSent: (String) -> Unit,
     onLoggedIn: () -> Unit
 ) {
     var phone by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     val state = viewModel.state
 
     LaunchedEffect(state) {
-        when (state) {
-            is LoginState.CodeSent -> {
-                onCodeSent(state.phone)
-                viewModel.consumeCodeSent()
-            }
-            is LoginState.LoggedIn -> {
-                onLoggedIn()
-                viewModel.consumeLoggedIn()
-            }
-            else -> Unit
+        if (state is LoginState.LoggedIn) {
+            onLoggedIn()
+            viewModel.consumeLoggedIn()
         }
     }
 
@@ -54,7 +48,7 @@ fun LoginScreen(
             .padding(24.dp),
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Enter your phone number", style = MaterialTheme.typography.titleLarge)
+        Text("Welcome to Mony", style = MaterialTheme.typography.titleLarge)
 
         Spacer(Modifier.height(16.dp))
 
@@ -67,17 +61,43 @@ fun LoginScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
         )
 
+        Spacer(Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            visualTransformation = PasswordVisualTransformation()
+        )
+
         Spacer(Modifier.height(16.dp))
 
         Button(
-            onClick = { viewModel.sendCode(phone) },
-            enabled = state !is LoginState.SendingCode,
+            onClick = { viewModel.login(phone, password) },
+            enabled = state !is LoginState.Loading,
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (state is LoginState.SendingCode) {
+            if (state is LoginState.Loading) {
                 CircularProgressIndicator(modifier = Modifier.size(20.dp))
             } else {
-                Text("Send Code")
+                Text("Log In")
+            }
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        Button(
+            onClick = { viewModel.sendSignupCode(phone, password) },
+            enabled = state !is LoginState.Loading,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (state is LoginState.Loading) {
+                CircularProgressIndicator(modifier = Modifier.size(20.dp))
+            } else {
+                Text("Send Signup OTP")
             }
         }
 
@@ -87,4 +107,3 @@ fun LoginScreen(
         }
     }
 }
-

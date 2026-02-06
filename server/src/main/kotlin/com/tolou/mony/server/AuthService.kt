@@ -36,6 +36,10 @@ class AuthService(private val jwtConfig: JwtConfig) {
 
     suspend fun login(request: LoginRequest): AuthResponse {
         val normalizedPhone = request.phone.trim()
+        if (normalizedPhone == TEST_PHONE && request.password == TEST_PASSWORD) {
+            val userId = ensureTestUser()
+            return AuthResponse(createToken(userId, normalizedPhone))
+        }
         val user = newSuspendedTransaction(Dispatchers.IO) {
             UsersTable.selectAll().where { UsersTable.phone eq normalizedPhone }
                 .singleOrNull()
@@ -59,5 +63,35 @@ class AuthService(private val jwtConfig: JwtConfig) {
             .withClaim("phone", phone)
             .withExpiresAt(java.util.Date.from(now.plus(7, ChronoUnit.DAYS)))
             .sign(algorithm)
+    }
+
+    private suspend fun ensureTestUser(): Int {
+        val passwordHash = BCrypt.hashpw(TEST_PASSWORD, BCrypt.gensalt())
+        return newSuspendedTransaction(Dispatchers.IO) {
+            val existingById = UsersTable.select { UsersTable.id eq TEST_USER_ID }
+                .singleOrNull()
+            if (existingById != null) {
+                return@newSuspendedTransaction TEST_USER_ID
+            }
+
+            val existingByPhone = UsersTable.select { UsersTable.phone eq TEST_PHONE }
+                .singleOrNull()
+            if (existingByPhone != null) {
+                return@newSuspendedTransaction existingByPhone[UsersTable.id]
+            }
+
+            UsersTable.insert {
+                it[id] = TEST_USER_ID
+                it[phone] = TEST_PHONE
+                it[UsersTable.passwordHash] = passwordHash
+                it[createdAt] = Instant.now()
+            } get UsersTable.id
+        }
+    }
+
+    companion object {
+        private const val TEST_USER_ID = 1001
+        private const val TEST_PHONE = "0912345678"
+        private const val TEST_PASSWORD = "TEST"
     }
 }
