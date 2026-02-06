@@ -29,6 +29,10 @@ class LoginViewModel(
 
     fun sendCode(phone: String) {
         viewModelScope.launch {
+            if (phone == TEST_PHONE_NUMBER) {
+                state = LoginState.LoggedIn
+                return@launch
+            }
             state = LoginState.SendingCode
             try {
                 val code = generateOtpCode()
@@ -67,5 +71,9 @@ class LoginViewModel(
 
     private fun generateOtpCode(): String {
         return (10000..99999).random().toString()
+    }
+
+    companion object {
+        const val TEST_PHONE_NUMBER = "09123456789"
     }
 }

@@ -22,21 +22,28 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
-    onCodeSent: (String) -> Unit
+    onCodeSent: (String) -> Unit,
+    onLoggedIn: () -> Unit
 ) {
     var phone by remember { mutableStateOf("") }
     val state = viewModel.state
 
     LaunchedEffect(state) {
-        if (state is LoginState.CodeSent) {
-            onCodeSent(state.phone)
-            viewModel.consumeCodeSent()
+        when (state) {
+            is LoginState.CodeSent -> {
+                onCodeSent(state.phone)
+                viewModel.consumeCodeSent()
+            }
+            is LoginState.LoggedIn -> {
+                onLoggedIn()
+                viewModel.consumeLoggedIn()
+            }
+            else -> Unit
         }
     }
 
@@ -79,3 +86,4 @@ fun LoginScreen(
         }
     }
 }
+

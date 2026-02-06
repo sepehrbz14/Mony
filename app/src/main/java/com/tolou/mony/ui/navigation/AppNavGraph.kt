@@ -45,6 +45,13 @@ fun AppNavGraph(
                     navController.navigate(
                         NavRoutes.Verify.createRoute(phone)
                     )
+                },
+                onLoggedIn = {
+                    navController.navigate(NavRoutes.Main.route) {
+                        popUpTo(NavRoutes.Login.route) {
+                            inclusive = true
+                        }
+                    }
                 }
             )
         }
