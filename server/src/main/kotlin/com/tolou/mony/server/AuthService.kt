@@ -2,10 +2,14 @@ package com.tolou.mony.server
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import org.jetbrains.exposed.sql.selectAll
 import kotlinx.coroutines.Dispatchers
+import org.jetbrains.exposed.sql.Op
+import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.mindrot.jbcrypt.BCrypt
 import java.time.Instant
@@ -33,7 +37,7 @@ class AuthService(private val jwtConfig: JwtConfig) {
     suspend fun login(request: LoginRequest): AuthResponse {
         val normalizedPhone = request.phone.trim()
         val user = newSuspendedTransaction(Dispatchers.IO) {
-            UsersTable.select { UsersTable.phone eq normalizedPhone }
+            UsersTable.selectAll().where { UsersTable.phone eq normalizedPhone }
                 .singleOrNull()
         } ?: throw IllegalArgumentException("Invalid credentials.")
 
