@@ -10,9 +10,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import java.text.NumberFormat
 
 @Composable
-fun TotalSpendingCard(total: Int) {
+fun TotalSpendingCard(total: Long) {
+    val formattedTotal = NumberFormat.getCurrencyInstance().format(total)
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(4.dp)
@@ -23,7 +25,7 @@ fun TotalSpendingCard(total: Int) {
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
-                text = "$${(total)}",
+                text = formattedTotal,
                 style = MaterialTheme.typography.headlineMedium
             )
         }
