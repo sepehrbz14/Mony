@@ -20,7 +20,7 @@ dependencies {
     implementation(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.java.time)
-    implementation("org.flywaydb:flyway-database-postgresql:12.0.0")
+    implementation(libs.flyway.database.postgresql)
     implementation(libs.hikari)
     implementation(libs.flyway.core)
     implementation(libs.postgres)

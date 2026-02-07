@@ -63,6 +63,7 @@ exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version
 exposed-java-time = { group = "org.jetbrains.exposed", name = "exposed-java-time", version.ref = "exposed" }
 hikari = { group = "com.zaxxer", name = "HikariCP", version.ref = "hikari" }
 flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flyway" }
+flyway-database-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flyway" }
 postgres = { group = "org.postgresql", name = "postgresql", version.ref = "postgres" }
 logback-classic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
 jwt-library = { group = "com.auth0", name = "java-jwt", version.ref = "jwt" }
