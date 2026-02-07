@@ -39,6 +39,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.OutlinedTextFieldDefaults
 
 enum class TransactionType(val label: String) {
     Income("Income"),
@@ -115,7 +116,7 @@ fun AddTransactionScreen(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFFDADADA),
                     focusedBorderColor = Color(0xFF0B2D6D)
                 )
@@ -149,7 +150,7 @@ fun AddTransactionScreen(
                     .fillMaxWidth()
                     .height(56.dp),
                 singleLine = true,
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFFDADADA),
                     focusedBorderColor = Color(0xFF0B2D6D)
                 )
@@ -245,7 +246,7 @@ private fun CategoryDropdownField(
                     modifier = Modifier.size(24.dp)
                 )
             },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
+            colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = Color(0xFFDADADA),
                 focusedBorderColor = Color(0xFF0B2D6D)
             )
