@@ -3,6 +3,7 @@ package com.tolou.mony.server
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import org.jetbrains.exposed.sql.selectAll
+
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
@@ -68,13 +69,13 @@ class AuthService(private val jwtConfig: JwtConfig) {
     private suspend fun ensureTestUser(): Int {
         val passwordHash = BCrypt.hashpw(TEST_PASSWORD, BCrypt.gensalt())
         return newSuspendedTransaction(Dispatchers.IO) {
-            val existingById = UsersTable.select { UsersTable.id eq TEST_USER_ID }
+            val existingById = UsersTable.selectAll().where { UsersTable.id eq TEST_USER_ID }
                 .singleOrNull()
             if (existingById != null) {
                 return@newSuspendedTransaction TEST_USER_ID
             }
 
-            val existingByPhone = UsersTable.select { UsersTable.phone eq TEST_PHONE }
+            val existingByPhone = UsersTable.selectAll().where { UsersTable.phone eq TEST_PHONE }
                 .singleOrNull()
             if (existingByPhone != null) {
                 return@newSuspendedTransaction existingByPhone[UsersTable.id]
