@@ -52,5 +52,6 @@ fun Application.module() {
         }
         authRoutes(AuthService(jwtConfig))
         expenseRoutes()
+        userRoutes()
     }
 }

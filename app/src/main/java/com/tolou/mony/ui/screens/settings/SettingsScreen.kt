@@ -18,6 +18,9 @@ fun SettingsScreen(
     onBack: () -> Unit,
     username: String,
     onUsernameChange: (String) -> Unit,
+    onSave: () -> Unit,
+    isSaving: Boolean,
+    saveError: String?,
     onLogout: () -> Unit
 ) {
     Column(
@@ -35,6 +38,21 @@ fun SettingsScreen(
             label = { Text("Username") },
             modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = onSave,
+            enabled = username.isNotBlank() && !isSaving,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(if (isSaving) "Saving..." else "Save")
+        }
+
+        if (!saveError.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(saveError)
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 

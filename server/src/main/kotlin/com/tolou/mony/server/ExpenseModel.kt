@@ -18,6 +18,7 @@ object UsersTable : Table("users") {
     val id = integer("id").autoIncrement()
     val phone = text("phone").uniqueIndex()
     val passwordHash = text("password_hash")
+    val username = text("username").nullable()
     val createdAt = timestamp("created_at")
     override val primaryKey = PrimaryKey(id)
 }
