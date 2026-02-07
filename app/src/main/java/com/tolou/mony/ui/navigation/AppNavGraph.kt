@@ -2,7 +2,10 @@ package com.tolou.mony.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -25,6 +28,8 @@ import com.tolou.mony.ui.screens.main.MainScreen
 import com.tolou.mony.ui.screens.main.MainViewModel
 import com.tolou.mony.ui.screens.main.MainViewModelFactory
 import com.tolou.mony.ui.screens.settings.SettingsScreen
+import com.tolou.mony.ui.screens.transaction.AddTransactionScreen
+import com.tolou.mony.ui.screens.transaction.TransactionType
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
@@ -34,6 +39,7 @@ fun AppNavGraph(
     val context = LocalContext.current
     val navController = rememberNavController()
     val sessionStorage = remember { SessionStorage(context) }
+    var username by remember { mutableStateOf(sessionStorage.fetchUsername().orEmpty()) }
     val authRepository = remember {
         AuthRepository(
             RetrofitInstance.retrofit.create(AuthApi::class.java),
@@ -117,8 +123,37 @@ fun AppNavGraph(
             )
             MainScreen(
                 viewModel = viewModel,
+                username = username,
                 onSettingsClick = {
                     navController.navigate(NavRoutes.Settings.route)
+                },
+                onAddTransactionClick = {
+                    navController.navigate(NavRoutes.AddTransaction.route)
+                }
+            )
+        }
+
+        composable(NavRoutes.AddTransaction.route) {
+            val parentEntry = remember(navController) {
+                navController.getBackStackEntry(NavRoutes.Main.route)
+            }
+            val viewModel: MainViewModel = viewModel(
+                parentEntry,
+                factory = MainViewModelFactory(expenseRepository)
+            )
+            AddTransactionScreen(
+                onBack = { navController.popBackStack() },
+                onSubmit = { type, amount, category, description ->
+                    val title = if (description.isBlank()) {
+                        category
+                    } else {
+                        "$category: $description"
+                    }
+                    when (type) {
+                        TransactionType.Income -> viewModel.addIncome(title, amount)
+                        TransactionType.Expense -> viewModel.addExpense(title, amount)
+                    }
+                    navController.popBackStack()
                 }
             )
         }
@@ -127,8 +162,14 @@ fun AppNavGraph(
         composable(NavRoutes.Settings.route) {
             SettingsScreen(
                 onBack = { navController.popBackStack() },
+                username = username,
+                onUsernameChange = { updatedName ->
+                    username = updatedName
+                    sessionStorage.saveUsername(updatedName)
+                },
                 onLogout = {
                     authRepository.clearSession()
+                    username = ""
                     onLoggedOut()
                     navController.navigate(NavRoutes.Login.route) {
                         popUpTo(NavRoutes.Main.route) {
