@@ -25,6 +25,8 @@ import com.tolou.mony.ui.screens.main.MainScreen
 import com.tolou.mony.ui.screens.main.MainViewModel
 import com.tolou.mony.ui.screens.main.MainViewModelFactory
 import com.tolou.mony.ui.screens.settings.SettingsScreen
+import com.tolou.mony.ui.screens.transaction.AddTransactionScreen
+import com.tolou.mony.ui.screens.transaction.TransactionType
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
@@ -119,6 +121,34 @@ fun AppNavGraph(
                 viewModel = viewModel,
                 onSettingsClick = {
                     navController.navigate(NavRoutes.Settings.route)
+                },
+                onAddTransactionClick = {
+                    navController.navigate(NavRoutes.AddTransaction.route)
+                }
+            )
+        }
+
+        composable(NavRoutes.AddTransaction.route) {
+            val parentEntry = remember(navController) {
+                navController.getBackStackEntry(NavRoutes.Main.route)
+            }
+            val viewModel: MainViewModel = viewModel(
+                parentEntry,
+                factory = MainViewModelFactory(expenseRepository)
+            )
+            AddTransactionScreen(
+                onBack = { navController.popBackStack() },
+                onSubmit = { type, amount, category, description ->
+                    val title = if (description.isBlank()) {
+                        category
+                    } else {
+                        "$category: $description"
+                    }
+                    when (type) {
+                        TransactionType.Income -> viewModel.addIncome(title, amount)
+                        TransactionType.Expense -> viewModel.addExpense(title, amount)
+                    }
+                    navController.popBackStack()
                 }
             )
         }

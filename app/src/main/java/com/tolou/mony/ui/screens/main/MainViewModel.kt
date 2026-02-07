@@ -11,8 +11,14 @@ import kotlinx.coroutines.launch
 
 data class MainUiState(
     val isLoading: Boolean = false,
+    val incomes: List<IncomeEntry> = emptyList(),
     val expenses: List<ExpenseResponse> = emptyList(),
     val error: String? = null
+)
+
+data class IncomeEntry(
+    val title: String,
+    val amount: Long
 )
 
 class MainViewModel(
@@ -21,6 +27,13 @@ class MainViewModel(
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState
+
+    fun addIncome(title: String, amount: Long) {
+        _uiState.update { currentState ->
+            val updatedIncomes = currentState.incomes + IncomeEntry(title = title, amount = amount)
+            currentState.copy(incomes = updatedIncomes)
+        }
+    }
 
     fun addExpense(title: String, amount: Long) {
         viewModelScope.launch {
@@ -58,5 +71,9 @@ class MainViewModel(
 
     fun totalSpending(expenses: List<ExpenseResponse>): Long {
         return expenses.sumOf { it.amount }
+    }
+
+    fun totalIncome(incomes: List<IncomeEntry>): Long {
+        return incomes.sumOf { it.amount }
     }
 }
