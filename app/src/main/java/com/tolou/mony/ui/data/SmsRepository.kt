@@ -7,7 +7,7 @@ import com.tolou.mony.data.network.SmsApi
 class SmsRepository(
     private val api: SmsApi
 ) {
-    private val templateId = 123456
+    private val templateId = 567011
 
     suspend fun sendOtp(phone: String, code: String) {
         api.sendOtp(
@@ -16,7 +16,7 @@ class SmsRepository(
                 templateId = templateId,
                 parameters = listOf(
                     OtpParameter(
-                        name = "Code",
+                        name = "CODE",
                         value = code
                     )
                 )
