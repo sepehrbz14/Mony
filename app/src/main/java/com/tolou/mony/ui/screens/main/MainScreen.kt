@@ -51,13 +51,6 @@ fun MainScreen(
             }
             TotalIncomeCard(total = viewModel.totalIncome(uiState.incomes))
             TotalSpendingCard(total = viewModel.totalSpending(uiState.expenses))
-            AddIncomeSection(
-                viewModel = viewModel
-            )
-            AddExpenseSection(
-                viewModel = viewModel
-            )
-
             if (uiState.isLoading) {
                 Text("Loading expenses…")
             } else if (uiState.error != null) {
