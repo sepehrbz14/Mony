@@ -14,16 +14,17 @@ import androidx.compose.ui.platform.LocalContext
 import com.tolou.mony.data.SessionStorage
 import com.tolou.mony.data.network.AuthApi
 import com.tolou.mony.data.network.ExpenseApi
+import com.tolou.mony.data.network.IncomeApi
 import com.tolou.mony.data.network.RetrofitInstance
 import com.tolou.mony.data.network.SmsApi
 import com.tolou.mony.data.network.SmsRetrofitInstance
 import com.tolou.mony.data.network.UserApi
 import com.tolou.mony.ui.data.AuthRepository
 import com.tolou.mony.ui.data.ExpenseRepository
+import com.tolou.mony.ui.data.IncomeRepository
 import com.tolou.mony.ui.data.SmsRepository
 import com.tolou.mony.ui.data.UserRepository
 import com.tolou.mony.ui.screens.login.LoginScreen
-import com.tolou.mony.ui.screens.login.LoginState
 import com.tolou.mony.ui.screens.login.LoginViewModel
 import com.tolou.mony.ui.screens.login.LoginViewModelFactory
 import com.tolou.mony.ui.screens.login.SignUpScreen
@@ -64,6 +65,12 @@ fun AppNavGraph(
             authRepository
         )
     }
+    val incomeRepository = remember {
+        IncomeRepository(
+            RetrofitInstance.retrofit.create(IncomeApi::class.java),
+            authRepository
+        )
+    }
     val userRepository = remember {
         UserRepository(
             RetrofitInstance.retrofit.create(UserApi::class.java),
@@ -78,6 +85,18 @@ fun AppNavGraph(
         NavRoutes.Welcome.route
     } else {
         NavRoutes.Main.route
+    }
+
+    LaunchedEffect(startDestination) {
+        if (startDestination == NavRoutes.Main.route) {
+            try {
+                val profile = userRepository.fetchProfile()
+                username = profile.username.orEmpty()
+                sessionStorage.saveUsername(username)
+            } catch (_: Exception) {
+                // Keep existing cached username.
+            }
+        }
     }
 
     NavHost(
@@ -98,6 +117,15 @@ fun AppNavGraph(
             LoginScreen(
                 viewModel = viewModel,
                 onLoggedIn = {
+                    coroutineScope.launch {
+                        try {
+                            val profile = userRepository.fetchProfile()
+                            username = profile.username.orEmpty()
+                            sessionStorage.saveUsername(username)
+                        } catch (_: Exception) {
+                            username = sessionStorage.fetchUsername().orEmpty()
+                        }
+                    }
                     navController.navigate(
                         NavRoutes.Main.route
                     ) {
@@ -147,7 +175,7 @@ fun AppNavGraph(
         // MAIN
         composable(NavRoutes.Main.route) {
             val viewModel: MainViewModel = viewModel(
-                factory = MainViewModelFactory(expenseRepository)
+                factory = MainViewModelFactory(expenseRepository, incomeRepository)
             )
             MainScreen(
                 viewModel = viewModel,
@@ -167,7 +195,7 @@ fun AppNavGraph(
             }
             val viewModel: MainViewModel = viewModel(
                 parentEntry,
-                factory = MainViewModelFactory(expenseRepository)
+                factory = MainViewModelFactory(expenseRepository, incomeRepository)
             )
             AddTransactionScreen(
                 onBack = { navController.popBackStack() },

@@ -3,7 +3,9 @@ package com.tolou.mony.ui.screens.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tolou.mony.data.network.ExpenseResponse
+import com.tolou.mony.data.network.IncomeResponse
 import com.tolou.mony.ui.data.ExpenseRepository
+import com.tolou.mony.ui.data.IncomeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -11,27 +13,33 @@ import kotlinx.coroutines.launch
 
 data class MainUiState(
     val isLoading: Boolean = false,
-    val incomes: List<IncomeEntry> = emptyList(),
+    val incomes: List<IncomeResponse> = emptyList(),
     val expenses: List<ExpenseResponse> = emptyList(),
     val error: String? = null
 )
 
-data class IncomeEntry(
-    val title: String,
-    val amount: Long
-)
-
 class MainViewModel(
-    private val expenseRepository: ExpenseRepository
+    private val expenseRepository: ExpenseRepository,
+    private val incomeRepository: IncomeRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState
 
     fun addIncome(title: String, amount: Long) {
-        _uiState.update { currentState ->
-            val updatedIncomes = currentState.incomes + IncomeEntry(title = title, amount = amount)
-            currentState.copy(incomes = updatedIncomes)
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                incomeRepository.addIncome(title, amount)
+                refresh()
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.localizedMessage ?: "Failed to add income."
+                    )
+                }
+            }
         }
     }
 
@@ -56,8 +64,11 @@ class MainViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
+                val incomes = incomeRepository.listIncomes()
                 val expenses = expenseRepository.listExpenses()
-                _uiState.update { it.copy(isLoading = false, expenses = expenses) }
+                _uiState.update {
+                    it.copy(isLoading = false, incomes = incomes, expenses = expenses)
+                }
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
@@ -73,7 +84,7 @@ class MainViewModel(
         return expenses.sumOf { it.amount }
     }
 
-    fun totalIncome(incomes: List<IncomeEntry>): Long {
+    fun totalIncome(incomes: List<IncomeResponse>): Long {
         return incomes.sumOf { it.amount }
     }
 }
