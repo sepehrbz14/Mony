@@ -80,6 +80,27 @@ class MainViewModel(
         }
     }
 
+    fun deleteTransaction(id: Int, isIncome: Boolean) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                if (isIncome) {
+                    incomeRepository.deleteIncome(id)
+                } else {
+                    expenseRepository.deleteExpense(id)
+                }
+                refresh()
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.localizedMessage ?: "Failed to delete transaction."
+                    )
+                }
+            }
+        }
+    }
+
     fun totalSpending(expenses: List<ExpenseResponse>): Long {
         return expenses.sumOf { it.amount }
     }

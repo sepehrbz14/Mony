@@ -3,6 +3,7 @@ package com.tolou.mony.server
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -30,6 +31,14 @@ class ExpenseRepository {
                 .where { ExpensesTable.userId eq userId }
                 .orderBy(ExpensesTable.id, SortOrder.DESC)
                 .map { row -> row.toExpenseResponse() }
+        }
+    }
+
+    suspend fun deleteExpense(userId: Int, expenseId: Int): Boolean {
+        return newSuspendedTransaction(Dispatchers.IO) {
+            ExpensesTable.deleteWhere {
+                (ExpensesTable.id eq expenseId) and (ExpensesTable.userId eq userId)
+            } > 0
         }
     }
 

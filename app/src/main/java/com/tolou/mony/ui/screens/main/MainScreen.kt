@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.LocalGasStation
+import androidx.compose.material.icons.filled.LocalGroceryStore
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Pets
@@ -175,6 +176,7 @@ fun MainScreen(
                                 icon = categoryIcon(category, isIncome = true),
                                 onClick = {
                                     selectedTransaction = TransactionDetails(
+                                        id = income.id,
                                         category = category,
                                         description = description,
                                         amount = income.amount,
@@ -194,6 +196,7 @@ fun MainScreen(
                                 icon = categoryIcon(category, isIncome = false),
                                 onClick = {
                                     selectedTransaction = TransactionDetails(
+                                        id = expense.id,
                                         category = category,
                                         description = description,
                                         amount = expense.amount,
@@ -297,8 +300,21 @@ fun MainScreen(
                     style = MaterialTheme.typography.bodyLarge,
                     color = if (transaction.isIncome) Color(0xFF0B2D6D) else Color(0xFFFF3B30)
                 )
-                TextButton(onClick = { selectedTransaction = null }) {
-                    Text("Close")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(onClick = { selectedTransaction = null }) {
+                        Text("Close")
+                    }
+                    TextButton(
+                        onClick = {
+                            viewModel.deleteTransaction(transaction.id, transaction.isIncome)
+                            selectedTransaction = null
+                        }
+                    ) {
+                        Text("Delete", color = Color(0xFFFF3B30))
+                    }
                 }
             }
         }
@@ -419,6 +435,7 @@ private fun TransactionRow(
 }
 
 private data class TransactionDetails(
+    val id: Int,
     val category: String,
     val description: String,
     val amount: Long,
@@ -438,7 +455,8 @@ private fun parseTransactionTitle(title: String): Pair<String, String> {
 private fun categoryIcon(category: String, isIncome: Boolean): androidx.compose.ui.graphics.vector.ImageVector {
     val key = category.lowercase()
     return when {
-        key.contains("food") || key.contains("grocery") || key.contains("dining") -> Icons.Default.Restaurant
+        key.contains("grocery") -> Icons.Default.LocalGroceryStore
+        key.contains("food") || key.contains("dining") -> Icons.Default.Restaurant
         key.contains("transport") || key.contains("fuel") -> Icons.Default.DirectionsCar
         key.contains("rent") || key.contains("mortgage") || key.contains("home") -> Icons.Default.Home
         key.contains("shopping") -> Icons.Default.ShoppingCart

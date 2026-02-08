@@ -6,6 +6,7 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 
@@ -31,6 +32,21 @@ fun Route.expenseRoutes() {
             }
             val created = repository.createExpense(userId, request)
             call.respond(HttpStatusCode.Created, created)
+        }
+
+        delete("/expenses/{id}") {
+            val userId = call.principalUserId()
+            val id = call.parameters["id"]?.toIntOrNull()
+            if (id == null) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid expense id."))
+                return@delete
+            }
+            val deleted = repository.deleteExpense(userId, id)
+            if (deleted) {
+                call.respond(HttpStatusCode.NoContent)
+            } else {
+                call.respond(HttpStatusCode.NotFound, mapOf("error" to "Expense not found."))
+            }
         }
     }
 }

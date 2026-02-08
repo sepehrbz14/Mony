@@ -2,6 +2,7 @@ package com.tolou.mony.server
 
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
@@ -35,6 +36,14 @@ class IncomeRepository {
                         createdAt = row[IncomesTable.createdAt]
                     )
                 }
+        }
+    }
+
+    suspend fun deleteIncome(userId: Int, incomeId: Int): Boolean {
+        return newSuspendedTransaction(Dispatchers.IO) {
+            IncomesTable.deleteWhere {
+                (IncomesTable.id eq incomeId) and (IncomesTable.userId eq userId)
+            } > 0
         }
     }
 }

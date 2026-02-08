@@ -1,6 +1,7 @@
 package com.tolou.mony.data.network
 
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
@@ -30,4 +31,10 @@ interface ExpenseApi {
         @Header("Authorization") token: String,
         @Body request: ExpenseRequest
     ): ExpenseResponse
+
+    @DELETE("expenses/{id}")
+    suspend fun deleteExpense(
+        @Header("Authorization") token: String,
+        @retrofit2.http.Path("id") id: Int
+    )
 }

@@ -20,4 +20,9 @@ class IncomeRepository(
             request = IncomeRequest(title = title, amount = amount)
         )
     }
+
+    suspend fun deleteIncome(id: Int) {
+        val token = requireNotNull(authRepository.token()) { "Missing auth token." }
+        api.deleteIncome(token = "Bearer $token", id = id)
+    }
 }

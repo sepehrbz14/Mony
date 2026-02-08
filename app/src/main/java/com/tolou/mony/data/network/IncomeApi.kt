@@ -1,6 +1,7 @@
 package com.tolou.mony.data.network
 
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
@@ -29,4 +30,10 @@ interface IncomeApi {
         @Header("Authorization") token: String,
         @Body request: IncomeRequest
     ): IncomeResponse
+
+    @DELETE("incomes/{id}")
+    suspend fun deleteIncome(
+        @Header("Authorization") token: String,
+        @retrofit2.http.Path("id") id: Int
+    )
 }

@@ -20,4 +20,9 @@ class ExpenseRepository(
             request = ExpenseRequest(title = title, amount = amount)
         )
     }
+
+    suspend fun deleteExpense(id: Int) {
+        val token = requireNotNull(authRepository.token()) { "Missing auth token." }
+        api.deleteExpense(token = "Bearer $token", id = id)
+    }
 }
