@@ -146,7 +146,7 @@ fun AddTransactionScreen(
                     .height(56.dp),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
+                textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Start),
                 colors = TextFieldDefaults.colors(
                     unfocusedIndicatorColor = Color(0xFFDADADA),
                     focusedIndicatorColor = Color(0xFF0B2D6D)
@@ -176,7 +176,7 @@ fun AddTransactionScreen(
             OutlinedTextField(
                 value = descriptionInput,
                 onValueChange = { descriptionInput = it },
-                placeholder = { Text("Grocery shopping") },
+                placeholder = { Text("Add a note") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Button
@@ -23,6 +24,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,6 +46,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.CardGiftcard
+import androidx.compose.material.icons.filled.ChildCare
+import androidx.compose.material.icons.filled.LocalGasStation
+import androidx.compose.material.icons.filled.LocalHospital
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Work
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Flight
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Savings
 import androidx.compose.ui.text.input.KeyboardType
 
 
@@ -65,6 +82,8 @@ fun MainScreen(
     var budgetInput by remember { mutableStateOf(monthlyBudget.toString()) }
     val budgetSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val budgetUsed = (totalSpending.coerceAtLeast(0L)).toFloat() / monthlyBudget.coerceAtLeast(1L)
+    var selectedTransaction by remember { mutableStateOf<TransactionDetails?>(null) }
+    val transactionSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(Unit) {
         viewModel.refresh()
@@ -147,19 +166,41 @@ fun MainScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(uiState.incomes) { income ->
+                            val (category, description) = parseTransactionTitle(income.title)
                             TransactionRow(
-                                title = income.title,
-                                date = "Today",
+                                title = category,
+                                date = income.createdAt,
                                 amount = income.amount,
-                                isIncome = true
+                                isIncome = true,
+                                icon = categoryIcon(category, isIncome = true),
+                                onClick = {
+                                    selectedTransaction = TransactionDetails(
+                                        category = category,
+                                        description = description,
+                                        amount = income.amount,
+                                        createdAt = income.createdAt,
+                                        isIncome = true
+                                    )
+                                }
                             )
                         }
                         items(uiState.expenses) { expense ->
+                            val (category, description) = parseTransactionTitle(expense.title)
                             TransactionRow(
-                                title = expense.title,
-                                date = "Today",
+                                title = category,
+                                date = expense.createdAt,
                                 amount = expense.amount,
-                                isIncome = false
+                                isIncome = false,
+                                icon = categoryIcon(category, isIncome = false),
+                                onClick = {
+                                    selectedTransaction = TransactionDetails(
+                                        category = category,
+                                        description = description,
+                                        amount = expense.amount,
+                                        createdAt = expense.createdAt,
+                                        isIncome = false
+                                    )
+                                }
                             )
                         }
                     }
@@ -224,6 +265,44 @@ fun MainScreen(
             }
         }
     }
+
+    selectedTransaction?.let { transaction ->
+        ModalBottomSheet(
+            onDismissRequest = { selectedTransaction = null },
+            sheetState = transactionSheetState
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = transaction.category,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = transaction.createdAt,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF8E8E93)
+                )
+                if (transaction.description.isNotBlank()) {
+                    Text(
+                        text = transaction.description,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                Text(
+                    text = "${if (transaction.isIncome) "+" else "-"}$${"%,.2f".format(transaction.amount / 1.0)}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (transaction.isIncome) Color(0xFF0B2D6D) else Color(0xFFFF3B30)
+                )
+                TextButton(onClick = { selectedTransaction = null }) {
+                    Text("Close")
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -281,12 +360,16 @@ private fun TransactionRow(
     title: String,
     date: String,
     amount: Long,
-    isIncome: Boolean
+    isIncome: Boolean,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit
 ) {
     val amountColor = if (isIncome) Color(0xFF0B2D6D) else Color(0xFFFF3B30)
     val amountPrefix = if (isIncome) "+" else "-"
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -306,7 +389,12 @@ private fun TransactionRow(
                         .background(Color(0xFFF2F2F7)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("•")
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = Color(0xFF111111),
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
                 Spacer(modifier = Modifier.size(12.dp))
                 Column {
@@ -327,5 +415,43 @@ private fun TransactionRow(
                 style = MaterialTheme.typography.bodyMedium
             )
         }
+    }
+}
+
+private data class TransactionDetails(
+    val category: String,
+    val description: String,
+    val amount: Long,
+    val createdAt: String,
+    val isIncome: Boolean
+)
+
+private fun parseTransactionTitle(title: String): Pair<String, String> {
+    val parts = title.split(": ", limit = 2)
+    return if (parts.size == 2) {
+        parts[0] to parts[1]
+    } else {
+        title to ""
+    }
+}
+
+private fun categoryIcon(category: String, isIncome: Boolean): androidx.compose.ui.graphics.vector.ImageVector {
+    val key = category.lowercase()
+    return when {
+        key.contains("food") || key.contains("grocery") || key.contains("dining") -> Icons.Default.Restaurant
+        key.contains("transport") || key.contains("fuel") -> Icons.Default.DirectionsCar
+        key.contains("rent") || key.contains("mortgage") || key.contains("home") -> Icons.Default.Home
+        key.contains("shopping") -> Icons.Default.ShoppingCart
+        key.contains("entertainment") -> Icons.Default.Movie
+        key.contains("health") -> Icons.Default.LocalHospital
+        key.contains("education") -> Icons.Default.School
+        key.contains("travel") -> Icons.Default.Flight
+        key.contains("gift") -> Icons.Default.CardGiftcard
+        key.contains("pet") -> Icons.Default.Pets
+        key.contains("child") -> Icons.Default.ChildCare
+        key.contains("salary") || key.contains("business") || key.contains("freelance") || key.contains("commission") -> Icons.Default.Work
+        key.contains("investment") || key.contains("interest") || key.contains("refund") || key.contains("bonus") -> Icons.Default.Savings
+        isIncome -> Icons.Default.AttachMoney
+        else -> Icons.Default.LocalGasStation
     }
 }
