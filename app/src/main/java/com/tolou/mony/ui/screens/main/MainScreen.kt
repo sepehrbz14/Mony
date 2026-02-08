@@ -43,7 +43,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.text.input.KeyboardType
 
 
@@ -96,7 +96,7 @@ fun MainScreen(
                 }
                 IconButton(onClick = onSettingsClick) {
                     Icon(
-                        imageVector = Icons.Default.AccountCircle,
+                        imageVector = Icons.Default.Settings,
                         contentDescription = "Settings",
                         tint = Color(0xFFD1D1D6),
                         modifier = Modifier.size(40.dp)
