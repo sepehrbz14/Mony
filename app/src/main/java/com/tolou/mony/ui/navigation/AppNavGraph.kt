@@ -26,7 +26,9 @@ import com.tolou.mony.ui.screens.login.LoginScreen
 import com.tolou.mony.ui.screens.login.LoginState
 import com.tolou.mony.ui.screens.login.LoginViewModel
 import com.tolou.mony.ui.screens.login.LoginViewModelFactory
+import com.tolou.mony.ui.screens.login.SignUpScreen
 import com.tolou.mony.ui.screens.login.VerifyCodeScreen
+import com.tolou.mony.ui.screens.login.WelcomeScreen
 import com.tolou.mony.ui.screens.main.MainScreen
 import com.tolou.mony.ui.screens.main.MainViewModel
 import com.tolou.mony.ui.screens.main.MainViewModelFactory
@@ -73,7 +75,7 @@ fun AppNavGraph(
     var saveUsernameError by remember { mutableStateOf<String?>(null) }
 
     val startDestination = if (authRepository.token().isNullOrBlank()) {
-        NavRoutes.Login.route
+        NavRoutes.Welcome.route
     } else {
         NavRoutes.Main.route
     }
@@ -83,34 +85,47 @@ fun AppNavGraph(
         startDestination = startDestination
     ) {
 
+        composable(NavRoutes.Welcome.route) {
+            WelcomeScreen(
+                onLogin = { navController.navigate(NavRoutes.Login.route) },
+                onSignUp = { navController.navigate(NavRoutes.SignUp.route) }
+            )
+        }
+
         // LOGIN (enter phone)
         composable(NavRoutes.Login.route) {
             val viewModel: LoginViewModel = viewModel(factory = authViewModelFactory)
-            LaunchedEffect(viewModel.state) {
-                if (viewModel.state is LoginState.CodeSent) {
-                    viewModel.consumeCodeSent()
-                    navController.navigate(NavRoutes.Verify.route)
-                }
-            }
             LoginScreen(
                 viewModel = viewModel,
                 onLoggedIn = {
                     navController.navigate(
                         NavRoutes.Main.route
                     ) {
-                        popUpTo(NavRoutes.Login.route) {
+                        popUpTo(NavRoutes.Welcome.route) {
                             inclusive = true
                         }
                     }
-                }
+                },
+                onSignUp = { navController.navigate(NavRoutes.SignUp.route) },
+                onBack = { navController.popBackStack() }
             )
 
+        }
+
+        // SIGN UP (enter phone)
+        composable(NavRoutes.SignUp.route) {
+            val viewModel: LoginViewModel = viewModel(factory = authViewModelFactory)
+            SignUpScreen(
+                viewModel = viewModel,
+                onCodeSent = { navController.navigate(NavRoutes.Verify.route) },
+                onBack = { navController.popBackStack() }
+            )
         }
 
         // VERIFY SIGNUP OTP
         composable(NavRoutes.Verify.route) {
             val parentEntry = remember(navController) {
-                navController.getBackStackEntry(NavRoutes.Login.route)
+                navController.getBackStackEntry(NavRoutes.SignUp.route)
             }
             val viewModel: LoginViewModel = viewModel(
                 parentEntry,

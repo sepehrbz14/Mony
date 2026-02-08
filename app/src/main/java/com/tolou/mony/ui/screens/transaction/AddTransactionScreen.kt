@@ -52,13 +52,14 @@ fun AddTransactionScreen(
 ) {
     var selectedType by remember { mutableStateOf(TransactionType.Expense) }
     var amountInput by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf("Food") }
+    var selectedCategory by remember { mutableStateOf("") }
     var descriptionInput by remember { mutableStateOf("") }
     var categoryExpanded by remember { mutableStateOf(false) }
 
     val categories = when (selectedType) {
         TransactionType.Income -> listOf(
             "Salary",
+            "Business",
             "Freelance",
             "Bonus",
             "Interest",
@@ -68,6 +69,7 @@ fun AddTransactionScreen(
             "Other"
         )
         TransactionType.Expense -> listOf(
+            "Food",
             "Groceries",
             "Dining",
             "Transport",
