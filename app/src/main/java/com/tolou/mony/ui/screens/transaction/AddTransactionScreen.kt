@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -52,34 +53,49 @@ fun AddTransactionScreen(
 ) {
     var selectedType by remember { mutableStateOf(TransactionType.Expense) }
     var amountInput by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf("Food") }
+    var selectedCategory by remember { mutableStateOf("") }
     var descriptionInput by remember { mutableStateOf("") }
     var categoryExpanded by remember { mutableStateOf(false) }
 
     val categories = when (selectedType) {
         TransactionType.Income -> listOf(
             "Salary",
+            "Business",
             "Freelance",
             "Bonus",
+            "Commission",
+            "Rental",
             "Interest",
             "Gift",
             "Refund",
             "Investment",
+            "Side Hustle",
             "Other"
         )
         TransactionType.Expense -> listOf(
+            "Food",
             "Groceries",
             "Dining",
             "Transport",
+            "Fuel",
             "Rent",
+            "Mortgage",
+            "Home Supplies",
             "Entertainment",
             "Utilities",
             "Healthcare",
             "Shopping",
+            "Personal Care",
             "Education",
             "Travel",
             "Insurance",
             "Subscriptions",
+            "Gifts",
+            "Charity",
+            "Taxes",
+            "Fees",
+            "Pets",
+            "Childcare",
             "Other"
         )
     }
@@ -245,14 +261,17 @@ private fun CategoryDropdownField(
     onExpandedChange: (Boolean) -> Unit,
     onCategorySelected: (String) -> Unit
 ) {
-    Box {
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = onExpandedChange
+    ) {
         OutlinedTextField(
             value = selectedCategory,
             onValueChange = {},
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
-                .clickable { onExpandedChange(true) },
+                .menuAnchor(),
             readOnly = true,
             trailingIcon = {
                 Icon(

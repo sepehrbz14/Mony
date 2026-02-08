@@ -14,19 +14,22 @@ import androidx.compose.ui.platform.LocalContext
 import com.tolou.mony.data.SessionStorage
 import com.tolou.mony.data.network.AuthApi
 import com.tolou.mony.data.network.ExpenseApi
+import com.tolou.mony.data.network.IncomeApi
 import com.tolou.mony.data.network.RetrofitInstance
 import com.tolou.mony.data.network.SmsApi
 import com.tolou.mony.data.network.SmsRetrofitInstance
 import com.tolou.mony.data.network.UserApi
 import com.tolou.mony.ui.data.AuthRepository
 import com.tolou.mony.ui.data.ExpenseRepository
+import com.tolou.mony.ui.data.IncomeRepository
 import com.tolou.mony.ui.data.SmsRepository
 import com.tolou.mony.ui.data.UserRepository
 import com.tolou.mony.ui.screens.login.LoginScreen
-import com.tolou.mony.ui.screens.login.LoginState
 import com.tolou.mony.ui.screens.login.LoginViewModel
 import com.tolou.mony.ui.screens.login.LoginViewModelFactory
+import com.tolou.mony.ui.screens.login.SignUpScreen
 import com.tolou.mony.ui.screens.login.VerifyCodeScreen
+import com.tolou.mony.ui.screens.login.WelcomeScreen
 import com.tolou.mony.ui.screens.main.MainScreen
 import com.tolou.mony.ui.screens.main.MainViewModel
 import com.tolou.mony.ui.screens.main.MainViewModelFactory
@@ -62,6 +65,12 @@ fun AppNavGraph(
             authRepository
         )
     }
+    val incomeRepository = remember {
+        IncomeRepository(
+            RetrofitInstance.retrofit.create(IncomeApi::class.java),
+            authRepository
+        )
+    }
     val userRepository = remember {
         UserRepository(
             RetrofitInstance.retrofit.create(UserApi::class.java),
@@ -73,9 +82,21 @@ fun AppNavGraph(
     var saveUsernameError by remember { mutableStateOf<String?>(null) }
 
     val startDestination = if (authRepository.token().isNullOrBlank()) {
-        NavRoutes.Login.route
+        NavRoutes.Welcome.route
     } else {
         NavRoutes.Main.route
+    }
+
+    LaunchedEffect(startDestination) {
+        if (startDestination == NavRoutes.Main.route) {
+            try {
+                val profile = userRepository.fetchProfile()
+                username = profile.username.orEmpty()
+                sessionStorage.saveUsername(username)
+            } catch (_: Exception) {
+                // Keep existing cached username.
+            }
+        }
     }
 
     NavHost(
@@ -83,34 +104,56 @@ fun AppNavGraph(
         startDestination = startDestination
     ) {
 
+        composable(NavRoutes.Welcome.route) {
+            WelcomeScreen(
+                onLogin = { navController.navigate(NavRoutes.Login.route) },
+                onSignUp = { navController.navigate(NavRoutes.SignUp.route) }
+            )
+        }
+
         // LOGIN (enter phone)
         composable(NavRoutes.Login.route) {
             val viewModel: LoginViewModel = viewModel(factory = authViewModelFactory)
-            LaunchedEffect(viewModel.state) {
-                if (viewModel.state is LoginState.CodeSent) {
-                    viewModel.consumeCodeSent()
-                    navController.navigate(NavRoutes.Verify.route)
-                }
-            }
             LoginScreen(
                 viewModel = viewModel,
                 onLoggedIn = {
+                    coroutineScope.launch {
+                        try {
+                            val profile = userRepository.fetchProfile()
+                            username = profile.username.orEmpty()
+                            sessionStorage.saveUsername(username)
+                        } catch (_: Exception) {
+                            username = sessionStorage.fetchUsername().orEmpty()
+                        }
+                    }
                     navController.navigate(
                         NavRoutes.Main.route
                     ) {
-                        popUpTo(NavRoutes.Login.route) {
+                        popUpTo(NavRoutes.Welcome.route) {
                             inclusive = true
                         }
                     }
-                }
+                },
+                onSignUp = { navController.navigate(NavRoutes.SignUp.route) },
+                onBack = { navController.popBackStack() }
             )
 
+        }
+
+        // SIGN UP (enter phone)
+        composable(NavRoutes.SignUp.route) {
+            val viewModel: LoginViewModel = viewModel(factory = authViewModelFactory)
+            SignUpScreen(
+                viewModel = viewModel,
+                onCodeSent = { navController.navigate(NavRoutes.Verify.route) },
+                onBack = { navController.popBackStack() }
+            )
         }
 
         // VERIFY SIGNUP OTP
         composable(NavRoutes.Verify.route) {
             val parentEntry = remember(navController) {
-                navController.getBackStackEntry(NavRoutes.Login.route)
+                navController.getBackStackEntry(NavRoutes.SignUp.route)
             }
             val viewModel: LoginViewModel = viewModel(
                 parentEntry,
@@ -132,7 +175,7 @@ fun AppNavGraph(
         // MAIN
         composable(NavRoutes.Main.route) {
             val viewModel: MainViewModel = viewModel(
-                factory = MainViewModelFactory(expenseRepository)
+                factory = MainViewModelFactory(expenseRepository, incomeRepository)
             )
             MainScreen(
                 viewModel = viewModel,
@@ -152,7 +195,7 @@ fun AppNavGraph(
             }
             val viewModel: MainViewModel = viewModel(
                 parentEntry,
-                factory = MainViewModelFactory(expenseRepository)
+                factory = MainViewModelFactory(expenseRepository, incomeRepository)
             )
             AddTransactionScreen(
                 onBack = { navController.popBackStack() },
