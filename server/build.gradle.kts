@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
@@ -27,4 +29,9 @@ dependencies {
     implementation(libs.jwt.library)
     implementation(libs.bcrypt)
     implementation(libs.logback.classic)
+}
+tasks {
+    named<ShadowJar>("shadowJar") {
+        mergeServiceFiles()
+    }
 }

@@ -23,7 +23,7 @@ android {
         buildConfigField(
             "String",
             "API_BASE_URL",
-            "\"https://mony-production-cad2.up.railway.app:7214/\""
+            "\"https://mony-production-facb.up.railway.app/\""
         )
     }
 
