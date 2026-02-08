@@ -62,10 +62,13 @@ fun AddTransactionScreen(
             "Business",
             "Freelance",
             "Bonus",
+            "Commission",
+            "Rental",
             "Interest",
             "Gift",
             "Refund",
             "Investment",
+            "Side Hustle",
             "Other"
         )
         TransactionType.Expense -> listOf(
@@ -73,15 +76,25 @@ fun AddTransactionScreen(
             "Groceries",
             "Dining",
             "Transport",
+            "Fuel",
             "Rent",
+            "Mortgage",
+            "Home Supplies",
             "Entertainment",
             "Utilities",
             "Healthcare",
             "Shopping",
+            "Personal Care",
             "Education",
             "Travel",
             "Insurance",
             "Subscriptions",
+            "Gifts",
+            "Charity",
+            "Taxes",
+            "Fees",
+            "Pets",
+            "Childcare",
             "Other"
         )
     }
