@@ -42,7 +42,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.foundation.border
-import androidx.compose.material3.DropdownMenuItemDefaults
 import com.tolou.mony.ui.theme.PureBlack
 import com.tolou.mony.ui.theme.PureWhite
 import com.tolou.mony.ui.theme.RoyalBlue
@@ -306,12 +305,11 @@ private fun CategoryDropdownField(
         ) {
             categories.forEach { category ->
                 DropdownMenuItem(
-                    text = { Text(category) },
+                    text = { Text(category, color = PureBlack) },
                     onClick = {
                         onCategorySelected(category)
                         onExpandedChange(false)
-                    },
-                    colors = DropdownMenuItemDefaults.colors(textColor = PureBlack)
+                    }
                 )
             }
         }
