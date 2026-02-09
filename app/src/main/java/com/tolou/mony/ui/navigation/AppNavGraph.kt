@@ -41,6 +41,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavGraph(
+    isDarkModeEnabled: Boolean,
+    onDarkModeChange: (Boolean) -> Unit,
     onLoggedOut: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -228,6 +230,8 @@ fun AppNavGraph(
                 onUsernameChange = { updatedName ->
                     username = updatedName
                 },
+                isDarkModeEnabled = isDarkModeEnabled,
+                onDarkModeToggle = onDarkModeChange,
                 onSave = {
                     coroutineScope.launch {
                         saveUsernameError = null
