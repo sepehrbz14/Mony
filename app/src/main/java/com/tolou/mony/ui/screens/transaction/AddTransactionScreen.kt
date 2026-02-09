@@ -58,6 +58,7 @@ fun AddTransactionScreen(
     var selectedCategory by remember { mutableStateOf("") }
     var descriptionInput by remember { mutableStateOf("") }
     var categoryExpanded by remember { mutableStateOf(false) }
+    val inputShape = RoundedCornerShape(20.dp)
 
     val categories = when (selectedType) {
         TransactionType.Income -> listOf(
@@ -142,6 +143,7 @@ fun AddTransactionScreen(
             OutlinedTextField(
                 value = amountInput,
                 onValueChange = { amountInput = it },
+                prefix = { Text("$") },
                 placeholder = { Text("$0.00") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -149,6 +151,7 @@ fun AddTransactionScreen(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Start),
+                shape = inputShape,
                 colors = TextFieldDefaults.colors(
                     unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                     focusedIndicatorColor = MaterialTheme.colorScheme.primary,
@@ -184,6 +187,7 @@ fun AddTransactionScreen(
                     .fillMaxWidth()
                     .height(56.dp),
                 singleLine = true,
+                shape = inputShape,
                 colors = TextFieldDefaults.colors(
                     unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                     focusedIndicatorColor = MaterialTheme.colorScheme.primary,
@@ -269,6 +273,7 @@ private fun CategoryDropdownField(
     onExpandedChange: (Boolean) -> Unit,
     onCategorySelected: (String) -> Unit
 ) {
+    val inputShape = RoundedCornerShape(20.dp)
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = onExpandedChange
@@ -281,6 +286,7 @@ private fun CategoryDropdownField(
                 .height(56.dp)
                 .menuAnchor(),
             readOnly = true,
+            shape = inputShape,
             trailingIcon = {
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowDown,

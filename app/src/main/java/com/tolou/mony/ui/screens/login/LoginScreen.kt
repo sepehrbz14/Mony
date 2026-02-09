@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -75,6 +76,7 @@ fun LoginScreen(
     var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val state = viewModel.state
+    val inputShape = RoundedCornerShape(20.dp)
 
     LaunchedEffect(state) {
         if (state is LoginState.LoggedIn) {
@@ -111,6 +113,7 @@ fun LoginScreen(
             onValueChange = { phone = it },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
+            shape = inputShape,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
         )
 
@@ -123,6 +126,7 @@ fun LoginScreen(
             onValueChange = { password = it },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
+            shape = inputShape,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = PasswordVisualTransformation()
         )
@@ -168,6 +172,7 @@ fun SignUpScreen(
     var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val state = viewModel.state
+    val inputShape = RoundedCornerShape(20.dp)
 
     LaunchedEffect(state) {
         if (state is LoginState.CodeSent) {
@@ -203,6 +208,7 @@ fun SignUpScreen(
             onValueChange = { phone = it },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
+            shape = inputShape,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
         )
 
@@ -215,6 +221,7 @@ fun SignUpScreen(
             onValueChange = { password = it },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
+            shape = inputShape,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = PasswordVisualTransformation()
         )

@@ -249,7 +249,8 @@ fun MainScreen(
                     onValueChange = { budgetInput = it },
                     label = { Text("Amount") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp)
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),

@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
@@ -32,6 +33,7 @@ fun VerifyCodeScreen(
 ) {
     var code by remember { mutableStateOf("") }
     val state = viewModel.state
+    val inputShape = RoundedCornerShape(20.dp)
 
     LaunchedEffect(state) {
         if (state is LoginState.LoggedIn) {
@@ -56,6 +58,7 @@ fun VerifyCodeScreen(
             label = { Text("OTP Code") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
+            shape = inputShape,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword)
         )
 

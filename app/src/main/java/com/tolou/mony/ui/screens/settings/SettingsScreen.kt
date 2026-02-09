@@ -52,6 +52,7 @@ fun SettingsScreen(
     changePasswordSuccess: String?,
     onLogout: () -> Unit
 ) {
+    val inputShape = RoundedCornerShape(20.dp)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -107,6 +108,7 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .height(56.dp),
                 singleLine = true,
+                shape = inputShape,
                 colors = TextFieldDefaults.colors(
                     unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                     focusedIndicatorColor = MaterialTheme.colorScheme.primary,
@@ -145,6 +147,7 @@ fun SettingsScreen(
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 label = { Text("Current password") },
+                shape = inputShape,
                 colors = TextFieldDefaults.colors(
                     unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                     focusedIndicatorColor = MaterialTheme.colorScheme.primary,
@@ -160,6 +163,7 @@ fun SettingsScreen(
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 label = { Text("New password") },
+                shape = inputShape,
                 colors = TextFieldDefaults.colors(
                     unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                     focusedIndicatorColor = MaterialTheme.colorScheme.primary,
@@ -175,6 +179,7 @@ fun SettingsScreen(
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 label = { Text("Confirm new password") },
+                shape = inputShape,
                 colors = TextFieldDefaults.colors(
                     unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                     focusedIndicatorColor = MaterialTheme.colorScheme.primary,
