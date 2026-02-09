@@ -1,5 +1,13 @@
 package com.tolou.mony.ui.screens.main
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -95,6 +104,12 @@ fun MainScreen(
     val budgetUsed = (totalSpending.coerceAtLeast(0L)).toFloat() / monthlyBudget.coerceAtLeast(1L)
     var selectedTransaction by remember { mutableStateOf<TransactionDetails?>(null) }
     val transactionSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val contentState = when {
+        uiState.isLoading -> ContentState.Loading
+        uiState.error != null -> ContentState.Error
+        uiState.expenses.isEmpty() && uiState.incomes.isEmpty() -> ContentState.Empty
+        else -> ContentState.Content
+    }
 
     LaunchedEffect(Unit) {
         viewModel.refresh()
@@ -162,60 +177,69 @@ fun MainScreen(
                 style = MaterialTheme.typography.titleSmall
             )
 
-            when {
-                uiState.isLoading -> {
-                    Text("Loading expenses…")
-                }
-                uiState.error != null -> {
-                    Text(uiState.error ?: "Something went wrong.")
-                }
-                uiState.expenses.isEmpty() && uiState.incomes.isEmpty() -> {
-                    Text("No transactions yet.")
-                }
-                else -> {
-                    LazyColumn(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(uiState.incomes) { income ->
-                            val (category, description) = parseTransactionTitle(income.title)
-                            TransactionRow(
-                                title = category,
-                                date = income.createdAt,
-                                amount = income.amount,
-                                isIncome = true,
-                                icon = categoryIcon(category, isIncome = true),
-                                onClick = {
-                                    selectedTransaction = TransactionDetails(
-                                        id = income.id,
-                                        category = category,
-                                        description = description,
-                                        amount = income.amount,
-                                        createdAt = income.createdAt,
-                                        isIncome = true
-                                    )
-                                }
-                            )
+            Crossfade(targetState = contentState, label = "transactionState") { state ->
+                when (state) {
+                    ContentState.Loading -> {
+                        LazyColumn(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(6) {
+                                TransactionSkeletonRow()
+                            }
                         }
-                        items(uiState.expenses) { expense ->
-                            val (category, description) = parseTransactionTitle(expense.title)
-                            TransactionRow(
-                                title = category,
-                                date = expense.createdAt,
-                                amount = expense.amount,
-                                isIncome = false,
-                                icon = categoryIcon(category, isIncome = false),
-                                onClick = {
-                                    selectedTransaction = TransactionDetails(
-                                        id = expense.id,
-                                        category = category,
-                                        description = description,
-                                        amount = expense.amount,
-                                        createdAt = expense.createdAt,
-                                        isIncome = false
-                                    )
-                                }
-                            )
+                    }
+                    ContentState.Error -> {
+                        Text(uiState.error ?: "Something went wrong.")
+                    }
+                    ContentState.Empty -> {
+                        Text("No transactions yet.")
+                    }
+                    ContentState.Content -> {
+                        LazyColumn(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(uiState.incomes) { income ->
+                                val (category, description) = parseTransactionTitle(income.title)
+                                TransactionRow(
+                                    title = category,
+                                    date = income.createdAt,
+                                    amount = income.amount,
+                                    isIncome = true,
+                                    icon = categoryIcon(category, isIncome = true),
+                                    onClick = {
+                                        selectedTransaction = TransactionDetails(
+                                            id = income.id,
+                                            category = category,
+                                            description = description,
+                                            amount = income.amount,
+                                            createdAt = income.createdAt,
+                                            isIncome = true
+                                        )
+                                    }
+                                )
+                            }
+                            items(uiState.expenses) { expense ->
+                                val (category, description) = parseTransactionTitle(expense.title)
+                                TransactionRow(
+                                    title = category,
+                                    date = expense.createdAt,
+                                    amount = expense.amount,
+                                    isIncome = false,
+                                    icon = categoryIcon(category, isIncome = false),
+                                    onClick = {
+                                        selectedTransaction = TransactionDetails(
+                                            id = expense.id,
+                                            category = category,
+                                            description = description,
+                                            amount = expense.amount,
+                                            createdAt = expense.createdAt,
+                                            isIncome = false
+                                        )
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -441,13 +465,89 @@ private fun TransactionRow(
                     )
                 }
             }
-            Text(
-                text = "$amountPrefix$${"%,.2f".format(amount / 1.0)}",
-                color = amountColor,
-                style = MaterialTheme.typography.bodyMedium
+            AnimatedContent(
+                targetState = amount,
+                label = "amountChange"
+            ) { animatedAmount ->
+                Text(
+                    text = "$amountPrefix$${"%,.2f".format(animatedAmount / 1.0)}",
+                    color = amountColor,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TransactionSkeletonRow() {
+    val shimmerAlpha by rememberInfiniteTransition(label = "skeleton")
+        .animateFloat(
+            initialValue = 0.4f,
+            targetValue = 0.9f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(900, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "skeletonAlpha"
+        )
+    val baseColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+    val highlightColor = MaterialTheme.colorScheme.onSurface.copy(alpha = shimmerAlpha)
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(highlightColor)
+                )
+                Spacer(modifier = Modifier.size(12.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .height(14.dp)
+                            .width(140.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(baseColor)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .height(12.dp)
+                            .width(90.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(baseColor)
+                    )
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .height(14.dp)
+                    .width(72.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(baseColor)
             )
         }
     }
+}
+
+private enum class ContentState {
+    Loading,
+    Error,
+    Empty,
+    Content
 }
 
 private data class TransactionDetails(
