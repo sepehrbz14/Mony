@@ -24,6 +24,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -376,22 +377,13 @@ private fun MonthlyBudgetCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(horizontal = 28.dp, vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
                 text = "Monthly Budget",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onPrimary
-            )
-            LinearProgressIndicator(
-                progress = progress,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(10.dp)
-                    .clip(RoundedCornerShape(999.dp)),
-                color = MaterialTheme.colorScheme.onPrimary,
-                trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -402,8 +394,23 @@ private fun MonthlyBudgetCard(
                     text = "$${"%,.2f".format(spent / 1.0)} / $${"%,.0f".format(budget / 1.0)}",
                     color = MaterialTheme.colorScheme.onPrimary
                 )
+            }
+            Box(
+                modifier = Modifier
+                    .size(140.dp)
+                    .align(Alignment.CenterHorizontally),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    progress = progress,
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+                    strokeWidth = 10.dp
+                )
                 Text(
                     text = "${(progress * 100).toInt()}%",
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             }
