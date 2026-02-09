@@ -42,9 +42,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.foundation.border
-import com.tolou.mony.ui.theme.PureBlack
-import com.tolou.mony.ui.theme.PureWhite
-import com.tolou.mony.ui.theme.RoyalBlue
 
 enum class TransactionType(val label: String) {
     Income("Income"),
@@ -153,9 +150,9 @@ fun AddTransactionScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Start),
                 colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = PureBlack,
-                    focusedIndicatorColor = RoyalBlue,
-                    cursorColor = RoyalBlue
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary
                 )
             )
         }
@@ -188,9 +185,9 @@ fun AddTransactionScreen(
                     .height(56.dp),
                 singleLine = true,
                 colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = PureBlack,
-                    focusedIndicatorColor = RoyalBlue,
-                    cursorColor = RoyalBlue
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary
                 )
             )
         }
@@ -210,12 +207,14 @@ fun AddTransactionScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = RoyalBlue),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
             shape = RoundedCornerShape(28.dp)
         ) {
             Text(
                 text = "Save",
-                color = PureWhite,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -228,15 +227,15 @@ private fun TransactionTypeToggle(
     selectedType: TransactionType,
     onTypeSelected: (TransactionType) -> Unit
 ) {
-    val backgroundColor = PureWhite
-    val selectedColor = RoyalBlue
-    val unselectedText = PureBlack
+    val backgroundColor = MaterialTheme.colorScheme.surface
+    val selectedColor = MaterialTheme.colorScheme.primary
+    val unselectedText = MaterialTheme.colorScheme.onSurface
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(backgroundColor, RoundedCornerShape(28.dp))
-            .border(1.dp, RoyalBlue, RoundedCornerShape(28.dp))
+            .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(28.dp))
             .padding(4.dp)
             .height(48.dp)
     ) {
@@ -253,7 +252,7 @@ private fun TransactionTypeToggle(
             ) {
                 Text(
                     text = type.label,
-                    color = if (isSelected) PureWhite else unselectedText,
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else unselectedText,
                     fontWeight = FontWeight.SemiBold
                 )
             }
@@ -287,25 +286,25 @@ private fun CategoryDropdownField(
                     imageVector = Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
-                    tint = PureBlack
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             },
             colors = TextFieldDefaults.colors(
-                unfocusedIndicatorColor = PureBlack,
-                focusedIndicatorColor = RoyalBlue,
-                cursorColor = RoyalBlue
+                unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary
             )
         )
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { onExpandedChange(false) },
             modifier = Modifier
-                .background(PureWhite)
-                .border(1.dp, RoyalBlue, RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
         ) {
             categories.forEach { category ->
                 DropdownMenuItem(
-                    text = { Text(category, color = PureBlack) },
+                    text = { Text(category, color = MaterialTheme.colorScheme.onSurface) },
                     onClick = {
                         onCategorySelected(category)
                         onExpandedChange(false)

@@ -18,6 +18,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -26,8 +28,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.tolou.mony.ui.theme.AlertRed
-import com.tolou.mony.ui.theme.PureBlack
-import com.tolou.mony.ui.theme.PureWhite
 import com.tolou.mony.ui.theme.RoyalBlue
 
 @Composable
@@ -35,6 +35,8 @@ fun SettingsScreen(
     onBack: () -> Unit,
     username: String,
     onUsernameChange: (String) -> Unit,
+    isDarkModeEnabled: Boolean,
+    onDarkModeToggle: (Boolean) -> Unit,
     onSave: () -> Unit,
     isSaving: Boolean,
     saveError: String?,
@@ -72,6 +74,30 @@ fun SettingsScreen(
             fontWeight = FontWeight.SemiBold
         )
 
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(text = "Dark mode", style = MaterialTheme.typography.labelLarge)
+                Text(
+                    text = if (isDarkModeEnabled) "On" else "Off",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+            }
+            Switch(
+                checked = isDarkModeEnabled,
+                onCheckedChange = onDarkModeToggle,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurface,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                )
+            )
+        }
+
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(text = "Username", style = MaterialTheme.typography.labelLarge)
             OutlinedTextField(
@@ -82,9 +108,9 @@ fun SettingsScreen(
                     .height(56.dp),
                 singleLine = true,
                 colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = PureBlack,
-                    focusedIndicatorColor = RoyalBlue,
-                    cursorColor = RoyalBlue
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary
                 )
             )
         }
@@ -95,10 +121,13 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = PureBlack),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
             shape = RoundedCornerShape(28.dp)
         ) {
-            Text(text = if (isSaving) "Saving..." else "Save", color = PureWhite)
+            Text(text = if (isSaving) "Saving..." else "Save")
         }
 
         if (!saveError.isNullOrBlank()) {
@@ -117,9 +146,9 @@ fun SettingsScreen(
                 visualTransformation = PasswordVisualTransformation(),
                 label = { Text("Current password") },
                 colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = PureBlack,
-                    focusedIndicatorColor = RoyalBlue,
-                    cursorColor = RoyalBlue
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary
                 )
             )
             OutlinedTextField(
@@ -132,9 +161,9 @@ fun SettingsScreen(
                 visualTransformation = PasswordVisualTransformation(),
                 label = { Text("New password") },
                 colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = PureBlack,
-                    focusedIndicatorColor = RoyalBlue,
-                    cursorColor = RoyalBlue
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary
                 )
             )
             OutlinedTextField(
@@ -147,9 +176,9 @@ fun SettingsScreen(
                 visualTransformation = PasswordVisualTransformation(),
                 label = { Text("Confirm new password") },
                 colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = PureBlack,
-                    focusedIndicatorColor = RoyalBlue,
-                    cursorColor = RoyalBlue
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary
                 )
             )
         }
@@ -163,12 +192,14 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = PureBlack),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
             shape = RoundedCornerShape(28.dp)
         ) {
             Text(
-                text = if (isChangingPassword) "Updating..." else "Update password",
-                color = PureWhite
+                text = if (isChangingPassword) "Updating..." else "Update password"
             )
         }
 
@@ -185,10 +216,13 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = PureWhite),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ),
             shape = RoundedCornerShape(28.dp)
         ) {
-            Text(text = "Log out", color = PureBlack)
+            Text(text = "Log out")
         }
     }
 }
