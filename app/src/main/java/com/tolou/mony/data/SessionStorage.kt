@@ -21,6 +21,20 @@ class SessionStorage(context: Context) {
 
     fun fetchUsername(): String? = prefs.getString(KEY_USERNAME, null)
 
+    fun saveDarkModeEnabled(enabled: Boolean) {
+        prefs.edit()
+            .putBoolean(KEY_DARK_MODE, enabled)
+            .apply()
+    }
+
+    fun fetchDarkModeEnabled(): Boolean? {
+        return if (prefs.contains(KEY_DARK_MODE)) {
+            prefs.getBoolean(KEY_DARK_MODE, false)
+        } else {
+            null
+        }
+    }
+
     fun clear() {
         prefs.edit()
             .remove(KEY_TOKEN)
@@ -32,5 +46,6 @@ class SessionStorage(context: Context) {
         private const val PREFS_NAME = "mony_session"
         private const val KEY_TOKEN = "auth_token"
         private const val KEY_USERNAME = "username"
+        private const val KEY_DARK_MODE = "dark_mode_enabled"
     }
 }

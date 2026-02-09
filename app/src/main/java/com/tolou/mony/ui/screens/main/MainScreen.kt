@@ -64,8 +64,6 @@ import androidx.compose.material.icons.filled.Savings
 import androidx.compose.ui.text.input.KeyboardType
 import com.tolou.mony.ui.theme.AlertRed
 import com.tolou.mony.ui.theme.NeutralGray
-import com.tolou.mony.ui.theme.PureBlack
-import com.tolou.mony.ui.theme.PureWhite
 import com.tolou.mony.ui.theme.RoyalBlue
 
 
@@ -122,7 +120,7 @@ fun MainScreen(
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = "Settings",
-                        tint = PureBlack,
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(40.dp)
                     )
                 }
@@ -136,7 +134,7 @@ fun MainScreen(
                 Text(
                     text = "$${"%,.2f".format(currentBalance / 1.0)}",
                     style = MaterialTheme.typography.displaySmall,
-                    color = PureBlack
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -221,11 +219,11 @@ fun MainScreen(
                 .align(Alignment.BottomCenter)
                 .padding(16.dp)
                 .size(64.dp),
-            containerColor = PureBlack
+            containerColor = MaterialTheme.colorScheme.primary
         ) {
             Text(
                 text = "+",
-                color = PureWhite,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 28.sp
             )
         }
@@ -335,7 +333,7 @@ private fun MonthlyBudgetCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = RoyalBlue)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
     ) {
         Column(
             modifier = Modifier
@@ -346,7 +344,7 @@ private fun MonthlyBudgetCard(
             Text(
                 text = "Monthly Budget",
                 style = MaterialTheme.typography.titleMedium,
-                color = PureWhite
+                color = MaterialTheme.colorScheme.onPrimary
             )
             LinearProgressIndicator(
                 progress = progress,
@@ -354,8 +352,8 @@ private fun MonthlyBudgetCard(
                     .fillMaxWidth()
                     .height(10.dp)
                     .clip(RoundedCornerShape(999.dp)),
-                color = PureWhite,
-                trackColor = PureWhite.copy(alpha = 0.3f)
+                color = MaterialTheme.colorScheme.onPrimary,
+                trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -364,11 +362,11 @@ private fun MonthlyBudgetCard(
             ) {
                 Text(
                     text = "$${"%,.2f".format(spent / 1.0)} / $${"%,.0f".format(budget / 1.0)}",
-                    color = PureWhite
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
                 Text(
                     text = "${(progress * 100).toInt()}%",
-                    color = PureWhite
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }
@@ -391,7 +389,7 @@ private fun TransactionRow(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = PureWhite),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
@@ -406,13 +404,13 @@ private fun TransactionRow(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(RoyalBlue.copy(alpha = 0.12f)),
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        tint = PureBlack,
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(20.dp)
                     )
                 }
