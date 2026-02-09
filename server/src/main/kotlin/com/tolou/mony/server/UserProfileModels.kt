@@ -12,3 +12,14 @@ data class UserProfileResponse(
     val id: Int,
     val username: String?
 )
+
+@Serializable
+data class ChangePasswordRequest(
+    val currentPassword: String,
+    val newPassword: String
+)
+
+@Serializable
+data class ChangePasswordResponse(
+    val message: String
+)

@@ -80,6 +80,12 @@ fun AppNavGraph(
     val coroutineScope = rememberCoroutineScope()
     var isSavingUsername by remember { mutableStateOf(false) }
     var saveUsernameError by remember { mutableStateOf<String?>(null) }
+    var currentPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var isChangingPassword by remember { mutableStateOf(false) }
+    var changePasswordError by remember { mutableStateOf<String?>(null) }
+    var changePasswordSuccess by remember { mutableStateOf<String?>(null) }
 
     val startDestination = if (authRepository.token().isNullOrBlank()) {
         NavRoutes.Welcome.route
@@ -239,9 +245,45 @@ fun AppNavGraph(
                 },
                 isSaving = isSavingUsername,
                 saveError = saveUsernameError,
+                currentPassword = currentPassword,
+                onCurrentPasswordChange = { currentPassword = it },
+                newPassword = newPassword,
+                onNewPasswordChange = { newPassword = it },
+                confirmPassword = confirmPassword,
+                onConfirmPasswordChange = { confirmPassword = it },
+                onChangePassword = {
+                    coroutineScope.launch {
+                        changePasswordError = null
+                        changePasswordSuccess = null
+                        isChangingPassword = true
+                        try {
+                            val response = userRepository.changePassword(
+                                currentPassword = currentPassword,
+                                newPassword = newPassword
+                            )
+                            currentPassword = ""
+                            newPassword = ""
+                            confirmPassword = ""
+                            changePasswordSuccess = response.message
+                        } catch (e: Exception) {
+                            changePasswordError =
+                                e.localizedMessage ?: "Failed to update password."
+                        } finally {
+                            isChangingPassword = false
+                        }
+                    }
+                },
+                isChangingPassword = isChangingPassword,
+                changePasswordError = changePasswordError,
+                changePasswordSuccess = changePasswordSuccess,
                 onLogout = {
                     authRepository.clearSession()
                     username = ""
+                    currentPassword = ""
+                    newPassword = ""
+                    confirmPassword = ""
+                    changePasswordError = null
+                    changePasswordSuccess = null
                     onLoggedOut()
                     navController.navigate(NavRoutes.Login.route) {
                         popUpTo(NavRoutes.Main.route) {

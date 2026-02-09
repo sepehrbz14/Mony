@@ -38,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -63,6 +62,11 @@ import androidx.compose.material.icons.filled.Flight
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Savings
 import androidx.compose.ui.text.input.KeyboardType
+import com.tolou.mony.ui.theme.AlertRed
+import com.tolou.mony.ui.theme.NeutralGray
+import com.tolou.mony.ui.theme.PureBlack
+import com.tolou.mony.ui.theme.PureWhite
+import com.tolou.mony.ui.theme.RoyalBlue
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,14 +115,14 @@ fun MainScreen(
                     Text(
                         text = "March, 2026",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFF8E8E93)
+                        color = NeutralGray
                     )
                 }
                 IconButton(onClick = onSettingsClick) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = "Settings",
-                        tint = Color(0xFFD1D1D6),
+                        tint = PureBlack,
                         modifier = Modifier.size(40.dp)
                     )
                 }
@@ -132,7 +136,7 @@ fun MainScreen(
                 Text(
                     text = "$${"%,.2f".format(currentBalance / 1.0)}",
                     style = MaterialTheme.typography.displaySmall,
-                    color = Color(0xFF111111)
+                    color = PureBlack
                 )
             }
 
@@ -217,11 +221,11 @@ fun MainScreen(
                 .align(Alignment.BottomCenter)
                 .padding(16.dp)
                 .size(64.dp),
-            containerColor = Color.Black
+            containerColor = PureBlack
         ) {
             Text(
                 text = "+",
-                color = Color.White,
+                color = PureWhite,
                 fontSize = 28.sp
             )
         }
@@ -287,7 +291,7 @@ fun MainScreen(
                 Text(
                     text = transaction.createdAt,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF8E8E93)
+                    color = NeutralGray
                 )
                 if (transaction.description.isNotBlank()) {
                     Text(
@@ -298,7 +302,7 @@ fun MainScreen(
                 Text(
                     text = "${if (transaction.isIncome) "+" else "-"}$${"%,.2f".format(transaction.amount / 1.0)}",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = if (transaction.isIncome) Color(0xFF0B2D6D) else Color(0xFFFF3B30)
+                    color = if (transaction.isIncome) RoyalBlue else AlertRed
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -313,7 +317,7 @@ fun MainScreen(
                             selectedTransaction = null
                         }
                     ) {
-                        Text("Delete", color = Color(0xFFFF3B30))
+                        Text("Delete", color = AlertRed)
                     }
                 }
             }
@@ -331,7 +335,7 @@ private fun MonthlyBudgetCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF0B2D6D))
+        colors = CardDefaults.cardColors(containerColor = RoyalBlue)
     ) {
         Column(
             modifier = Modifier
@@ -342,7 +346,7 @@ private fun MonthlyBudgetCard(
             Text(
                 text = "Monthly Budget",
                 style = MaterialTheme.typography.titleMedium,
-                color = Color.White
+                color = PureWhite
             )
             LinearProgressIndicator(
                 progress = progress,
@@ -350,8 +354,8 @@ private fun MonthlyBudgetCard(
                     .fillMaxWidth()
                     .height(10.dp)
                     .clip(RoundedCornerShape(999.dp)),
-                color = Color.White,
-                trackColor = Color(0xFF6D7FA8)
+                color = PureWhite,
+                trackColor = PureWhite.copy(alpha = 0.3f)
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -360,11 +364,11 @@ private fun MonthlyBudgetCard(
             ) {
                 Text(
                     text = "$${"%,.2f".format(spent / 1.0)} / $${"%,.0f".format(budget / 1.0)}",
-                    color = Color.White
+                    color = PureWhite
                 )
                 Text(
                     text = "${(progress * 100).toInt()}%",
-                    color = Color.White
+                    color = PureWhite
                 )
             }
         }
@@ -380,14 +384,14 @@ private fun TransactionRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     onClick: () -> Unit
 ) {
-    val amountColor = if (isIncome) Color(0xFF0B2D6D) else Color(0xFFFF3B30)
+    val amountColor = if (isIncome) RoyalBlue else AlertRed
     val amountPrefix = if (isIncome) "+" else "-"
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = PureWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
@@ -402,13 +406,13 @@ private fun TransactionRow(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFF2F2F7)),
+                        .background(RoyalBlue.copy(alpha = 0.12f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        tint = Color(0xFF111111),
+                        tint = PureBlack,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -421,7 +425,7 @@ private fun TransactionRow(
                     Text(
                         text = date,
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF8E8E93)
+                        color = NeutralGray
                     )
                 }
             }

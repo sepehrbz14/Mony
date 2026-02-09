@@ -22,9 +22,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.tolou.mony.ui.theme.AlertRed
+import com.tolou.mony.ui.theme.PureBlack
+import com.tolou.mony.ui.theme.PureWhite
+import com.tolou.mony.ui.theme.RoyalBlue
 
 @Composable
 fun SettingsScreen(
@@ -34,6 +38,16 @@ fun SettingsScreen(
     onSave: () -> Unit,
     isSaving: Boolean,
     saveError: String?,
+    currentPassword: String,
+    onCurrentPasswordChange: (String) -> Unit,
+    newPassword: String,
+    onNewPasswordChange: (String) -> Unit,
+    confirmPassword: String,
+    onConfirmPasswordChange: (String) -> Unit,
+    onChangePassword: () -> Unit,
+    isChangingPassword: Boolean,
+    changePasswordError: String?,
+    changePasswordSuccess: String?,
     onLogout: () -> Unit
 ) {
     Column(
@@ -68,8 +82,9 @@ fun SettingsScreen(
                     .height(56.dp),
                 singleLine = true,
                 colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = Color(0xFFDADADA),
-                    focusedIndicatorColor = Color(0xFF0B2D6D)
+                    unfocusedIndicatorColor = PureBlack,
+                    focusedIndicatorColor = RoyalBlue,
+                    cursorColor = RoyalBlue
                 )
             )
         }
@@ -80,14 +95,89 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
+            colors = ButtonDefaults.buttonColors(containerColor = PureBlack),
             shape = RoundedCornerShape(28.dp)
         ) {
-            Text(text = if (isSaving) "Saving..." else "Save", color = Color.White)
+            Text(text = if (isSaving) "Saving..." else "Save", color = PureWhite)
         }
 
         if (!saveError.isNullOrBlank()) {
-            Text(saveError, color = MaterialTheme.colorScheme.error)
+            Text(saveError, color = AlertRed)
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(text = "Change password", style = MaterialTheme.typography.labelLarge)
+            OutlinedTextField(
+                value = currentPassword,
+                onValueChange = onCurrentPasswordChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                label = { Text("Current password") },
+                colors = TextFieldDefaults.colors(
+                    unfocusedIndicatorColor = PureBlack,
+                    focusedIndicatorColor = RoyalBlue,
+                    cursorColor = RoyalBlue
+                )
+            )
+            OutlinedTextField(
+                value = newPassword,
+                onValueChange = onNewPasswordChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                label = { Text("New password") },
+                colors = TextFieldDefaults.colors(
+                    unfocusedIndicatorColor = PureBlack,
+                    focusedIndicatorColor = RoyalBlue,
+                    cursorColor = RoyalBlue
+                )
+            )
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = onConfirmPasswordChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                label = { Text("Confirm new password") },
+                colors = TextFieldDefaults.colors(
+                    unfocusedIndicatorColor = PureBlack,
+                    focusedIndicatorColor = RoyalBlue,
+                    cursorColor = RoyalBlue
+                )
+            )
+        }
+
+        Button(
+            onClick = onChangePassword,
+            enabled = currentPassword.isNotBlank()
+                && newPassword.isNotBlank()
+                && newPassword == confirmPassword
+                && !isChangingPassword,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = PureBlack),
+            shape = RoundedCornerShape(28.dp)
+        ) {
+            Text(
+                text = if (isChangingPassword) "Updating..." else "Update password",
+                color = PureWhite
+            )
+        }
+
+        if (!changePasswordError.isNullOrBlank()) {
+            Text(changePasswordError, color = AlertRed)
+        }
+
+        if (!changePasswordSuccess.isNullOrBlank()) {
+            Text(changePasswordSuccess, color = RoyalBlue)
         }
 
         Button(
@@ -95,10 +185,10 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF4F4F4)),
+            colors = ButtonDefaults.buttonColors(containerColor = PureWhite),
             shape = RoundedCornerShape(28.dp)
         ) {
-            Text(text = "Log out", color = Color(0xFF111111))
+            Text(text = "Log out", color = PureBlack)
         }
     }
 }

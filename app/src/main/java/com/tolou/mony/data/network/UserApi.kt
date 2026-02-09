@@ -14,6 +14,15 @@ data class UserProfileResponse(
     val username: String?
 )
 
+data class ChangePasswordRequest(
+    val currentPassword: String,
+    val newPassword: String
+)
+
+data class ChangePasswordResponse(
+    val message: String
+)
+
 interface UserApi {
     @GET("profile")
     suspend fun fetchProfile(
@@ -25,4 +34,10 @@ interface UserApi {
         @Header("Authorization") token: String,
         @Body request: UserProfileRequest
     ): UserProfileResponse
+
+    @PUT("profile/password")
+    suspend fun changePassword(
+        @Header("Authorization") token: String,
+        @Body request: ChangePasswordRequest
+    ): ChangePasswordResponse
 }

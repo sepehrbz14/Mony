@@ -33,5 +33,28 @@ fun Route.userRoutes() {
             val updated = repository.updateUsername(userId, trimmed)
             call.respond(updated)
         }
+
+        put("/profile/password") {
+            val userId = call.principalUserId()
+            val request = call.receive<ChangePasswordRequest>()
+            val current = request.currentPassword.trim()
+            val next = request.newPassword.trim()
+            if (current.isBlank() || next.isBlank()) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    mapOf("error" to "Current and new passwords are required.")
+                )
+                return@put
+            }
+            val updated = repository.updatePassword(userId, current, next)
+            if (!updated) {
+                call.respond(
+                    HttpStatusCode.Unauthorized,
+                    mapOf("error" to "Current password is incorrect.")
+                )
+                return@put
+            }
+            call.respond(ChangePasswordResponse(message = "Password updated."))
+        }
     }
 }
