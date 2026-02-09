@@ -8,7 +8,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import com.tolou.mony.data.SessionStorage
 import com.tolou.mony.ui.navigation.AppNavGraph
 import com.tolou.mony.ui.theme.MonyTheme
@@ -27,14 +31,19 @@ class MainActivity : ComponentActivity() {
             }
 
             MonyTheme(darkTheme = darkModeEnabled) {
-                AppNavGraph(
-                    isDarkModeEnabled = darkModeEnabled,
-                    onDarkModeChange = { enabled ->
-                        darkModeEnabled = enabled
-                        sessionStorage.saveDarkModeEnabled(enabled)
-                    },
-                    onLoggedOut = {}
-                )
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AppNavGraph(
+                        isDarkModeEnabled = darkModeEnabled,
+                        onDarkModeChange = { enabled ->
+                            darkModeEnabled = enabled
+                            sessionStorage.saveDarkModeEnabled(enabled)
+                        },
+                        onLoggedOut = {}
+                    )
+                }
             }
         }
     }

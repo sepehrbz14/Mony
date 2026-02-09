@@ -39,10 +39,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.CardGiftcard
@@ -61,9 +61,17 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Flight
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Savings
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.ui.text.input.KeyboardType
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.Locale
 import com.tolou.mony.ui.theme.AlertRed
 import com.tolou.mony.ui.theme.NeutralGray
+import com.tolou.mony.ui.theme.PureBlack
+import com.tolou.mony.ui.theme.PureWhite
 import com.tolou.mony.ui.theme.RoyalBlue
 
 
@@ -96,6 +104,7 @@ fun MainScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
                 .padding(horizontal = 20.dp, vertical = 24.dp)
                 .padding(bottom = 88.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
@@ -219,12 +228,14 @@ fun MainScreen(
                 .align(Alignment.BottomCenter)
                 .padding(16.dp)
                 .size(64.dp),
-            containerColor = MaterialTheme.colorScheme.primary
+            containerColor = PureBlack,
+            contentColor = PureWhite,
+            shape = CircleShape
         ) {
-            Text(
-                text = "+",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 28.sp
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add transaction",
+                modifier = Modifier.size(28.dp)
             )
         }
     }
@@ -232,7 +243,8 @@ fun MainScreen(
     if (showBudgetSheet) {
         ModalBottomSheet(
             onDismissRequest = { showBudgetSheet = false },
-            sheetState = budgetSheetState
+            sheetState = budgetSheetState,
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             Column(
                 modifier = Modifier
@@ -275,7 +287,8 @@ fun MainScreen(
     selectedTransaction?.let { transaction ->
         ModalBottomSheet(
             onDismissRequest = { selectedTransaction = null },
-            sheetState = transactionSheetState
+            sheetState = transactionSheetState,
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             Column(
                 modifier = Modifier
@@ -288,8 +301,8 @@ fun MainScreen(
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
-                    text = transaction.createdAt,
-                    style = MaterialTheme.typography.bodySmall,
+                    text = formatDetailDateTime(transaction.createdAt),
+                    style = MaterialTheme.typography.bodyMedium,
                     color = NeutralGray
                 )
                 if (transaction.description.isNotBlank()) {
@@ -422,8 +435,8 @@ private fun TransactionRow(
                         style = MaterialTheme.typography.bodyLarge
                     )
                     Text(
-                        text = date,
-                        style = MaterialTheme.typography.bodySmall,
+                        text = formatShortDate(date),
+                        style = MaterialTheme.typography.bodyMedium,
                         color = NeutralGray
                     )
                 }
@@ -474,5 +487,34 @@ private fun categoryIcon(category: String, isIncome: Boolean): androidx.compose.
         key.contains("investment") || key.contains("interest") || key.contains("refund") || key.contains("bonus") -> Icons.Default.Savings
         isIncome -> Icons.Default.AttachMoney
         else -> Icons.Default.LocalGasStation
+    }
+}
+
+private fun formatShortDate(isoDate: String): String {
+    val instant = runCatching { Instant.parse(isoDate) }.getOrNull() ?: return isoDate
+    val date = instant.atZone(ZoneId.systemDefault()).toLocalDate()
+    val month = date.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())
+    val day = date.dayOfMonth
+    return "$month $day${ordinalSuffix(day)}"
+}
+
+private fun formatDetailDateTime(isoDate: String): String {
+    val instant = runCatching { Instant.parse(isoDate) }.getOrNull() ?: return isoDate
+    val zonedDateTime = instant.atZone(ZoneId.systemDefault())
+    val date = zonedDateTime.toLocalDate()
+    val month = date.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())
+    val day = date.dayOfMonth
+    val dateLabel = "$month $day${ordinalSuffix(day)}, ${date.year}"
+    val timeLabel = zonedDateTime.format(DateTimeFormatter.ofPattern("h:mm a", Locale.getDefault()))
+    return "$dateLabel \u2022 $timeLabel"
+}
+
+private fun ordinalSuffix(day: Int): String {
+    if (day in 11..13) return "th"
+    return when (day % 10) {
+        1 -> "st"
+        2 -> "nd"
+        3 -> "rd"
+        else -> "th"
     }
 }
