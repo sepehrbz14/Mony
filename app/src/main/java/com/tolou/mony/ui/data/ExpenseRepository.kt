@@ -10,15 +10,15 @@ class ExpenseRepository(
 ) {
     suspend fun listExpenses(): List<ExpenseResponse> {
         val token = requireNotNull(authRepository.token()) { "Missing auth token." }
-        return api.listExpenses("Bearer $token")
+        return api.listExpenses("Bearer $token").map { it.copy(title = TransactionCipher.decrypt(it.title)) }
     }
 
     suspend fun addExpense(title: String, amount: Long): ExpenseResponse {
         val token = requireNotNull(authRepository.token()) { "Missing auth token." }
         return api.createExpense(
             token = "Bearer $token",
-            request = ExpenseRequest(title = title, amount = amount)
-        )
+            request = ExpenseRequest(title = TransactionCipher.encrypt(title), amount = amount)
+        ).copy(title = title)
     }
 
     suspend fun deleteExpense(id: Int) {

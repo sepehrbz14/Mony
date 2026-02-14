@@ -10,15 +10,15 @@ class IncomeRepository(
 ) {
     suspend fun listIncomes(): List<IncomeResponse> {
         val token = requireNotNull(authRepository.token()) { "Missing auth token." }
-        return api.listIncomes("Bearer $token")
+        return api.listIncomes("Bearer $token").map { it.copy(title = TransactionCipher.decrypt(it.title)) }
     }
 
     suspend fun addIncome(title: String, amount: Long): IncomeResponse {
         val token = requireNotNull(authRepository.token()) { "Missing auth token." }
         return api.createIncome(
             token = "Bearer $token",
-            request = IncomeRequest(title = title, amount = amount)
-        )
+            request = IncomeRequest(title = TransactionCipher.encrypt(title), amount = amount)
+        ).copy(title = title)
     }
 
     suspend fun deleteIncome(id: Int) {

@@ -78,6 +78,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+import kotlin.math.roundToInt
 import com.tolou.mony.ui.theme.AlertRed
 import com.tolou.mony.ui.theme.NeutralGray
 import com.tolou.mony.ui.theme.PureBlack
@@ -110,6 +111,36 @@ fun MainScreen(
         uiState.error != null -> ContentState.Error
         uiState.expenses.isEmpty() && uiState.incomes.isEmpty() -> ContentState.Empty
         else -> ContentState.Content
+    }
+    val sortedTransactions = remember(uiState.incomes, uiState.expenses) {
+        val incomes = uiState.incomes.map { income ->
+            val (category, description) = parseTransactionTitle(income.title)
+            UiTransaction(
+                id = income.id,
+                category = category,
+                description = description,
+                amount = income.amount,
+                createdAt = income.createdAt,
+                isIncome = true,
+                icon = categoryIcon(category, isIncome = true)
+            )
+        }
+        val expenses = uiState.expenses.map { expense ->
+            val (category, description) = parseTransactionTitle(expense.title)
+            UiTransaction(
+                id = expense.id,
+                category = category,
+                description = description,
+                amount = expense.amount,
+                createdAt = expense.createdAt,
+                isIncome = false,
+                icon = categoryIcon(category, isIncome = false)
+            )
+        }
+        (incomes + expenses).sortedByDescending { transaction ->
+            runCatching { Instant.parse(transaction.createdAt) }.getOrNull()
+                ?: Instant.EPOCH
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -201,42 +232,21 @@ fun MainScreen(
                             modifier = Modifier.weight(1f),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            items(uiState.incomes) { income ->
-                                val (category, description) = parseTransactionTitle(income.title)
+                            items(sortedTransactions) { transaction ->
                                 TransactionRow(
-                                    title = category,
-                                    date = income.createdAt,
-                                    amount = income.amount,
-                                    isIncome = true,
-                                    icon = categoryIcon(category, isIncome = true),
+                                    title = transaction.category,
+                                    date = transaction.createdAt,
+                                    amount = transaction.amount,
+                                    isIncome = transaction.isIncome,
+                                    icon = transaction.icon,
                                     onClick = {
                                         selectedTransaction = TransactionDetails(
-                                            id = income.id,
-                                            category = category,
-                                            description = description,
-                                            amount = income.amount,
-                                            createdAt = income.createdAt,
-                                            isIncome = true
-                                        )
-                                    }
-                                )
-                            }
-                            items(uiState.expenses) { expense ->
-                                val (category, description) = parseTransactionTitle(expense.title)
-                                TransactionRow(
-                                    title = category,
-                                    date = expense.createdAt,
-                                    amount = expense.amount,
-                                    isIncome = false,
-                                    icon = categoryIcon(category, isIncome = false),
-                                    onClick = {
-                                        selectedTransaction = TransactionDetails(
-                                            id = expense.id,
-                                            category = category,
-                                            description = description,
-                                            amount = expense.amount,
-                                            createdAt = expense.createdAt,
-                                            isIncome = false
+                                            id = transaction.id,
+                                            category = transaction.category,
+                                            description = transaction.description,
+                                            amount = transaction.amount,
+                                            createdAt = transaction.createdAt,
+                                            isIncome = transaction.isIncome
                                         )
                                     }
                                 )
@@ -369,36 +379,21 @@ private fun MonthlyBudgetCard(
     progress: Float,
     onClick: () -> Unit
 ) {
+    val percent = (progress * 100).roundToInt()
     Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 28.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Monthly Budget",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "$${"%,.2f".format(spent / 1.0)} / $${"%,.0f".format(budget / 1.0)}",
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
             Box(
-                modifier = Modifier
-                    .size(140.dp)
-                    .align(Alignment.CenterHorizontally),
+                modifier = Modifier.size(88.dp),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(
@@ -406,11 +401,26 @@ private fun MonthlyBudgetCard(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.onPrimary,
                     trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                    strokeWidth = 10.dp
+                    strokeWidth = 8.dp
                 )
                 Text(
-                    text = "${(progress * 100).toInt()}%",
+                    text = "$percent%",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Monthly Budget",
                     style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                Text(
+                    text = "$${"%,.2f".format(spent / 1.0)} / $${"%,.0f".format(budget / 1.0)}",
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             }
@@ -556,6 +566,16 @@ private enum class ContentState {
     Empty,
     Content
 }
+
+private data class UiTransaction(
+    val id: Int,
+    val category: String,
+    val description: String,
+    val amount: Long,
+    val createdAt: String,
+    val isIncome: Boolean,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector
+)
 
 private data class TransactionDetails(
     val id: Int,
