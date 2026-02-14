@@ -16,6 +16,11 @@ object TransactionCipher {
 
     // App-local key material; rotate with migration if changed.
     private const val SECRET_SEED = "MonySecureTxnV1_2026"
+    private val amountMask: Long by lazy {
+        val digest = MessageDigest.getInstance("SHA-256")
+            .digest("$SECRET_SEED::amount".toByteArray(StandardCharsets.UTF_8))
+        java.nio.ByteBuffer.wrap(digest.copyOfRange(0, 8)).long
+    }
 
     fun encrypt(plainText: String): String {
         if (plainText.isBlank()) return plainText
@@ -41,6 +46,10 @@ object TransactionCipher {
             String(cipher.doFinal(encrypted), StandardCharsets.UTF_8)
         }.getOrDefault(cipherText)
     }
+
+    fun encryptAmount(amount: Long): Long = amount xor amountMask
+
+    fun decryptAmount(obfuscatedAmount: Long): Long = obfuscatedAmount xor amountMask
 
     private fun secretKey(): SecretKeySpec {
         val digest = MessageDigest.getInstance("SHA-256").digest(SECRET_SEED.toByteArray(StandardCharsets.UTF_8))
