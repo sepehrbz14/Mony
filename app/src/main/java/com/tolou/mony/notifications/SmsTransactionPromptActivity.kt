@@ -58,7 +58,7 @@ class SmsTransactionPromptActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.setDimAmount(0f)
+        window.setDimAmount(0.28f)
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         val amount = intent.getLongExtra(EXTRA_AMOUNT, 0L)
@@ -223,7 +223,7 @@ private fun SmsTransactionPromptContent(
             ) {
                 Text(
                     text = "Detected transaction",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -246,7 +246,7 @@ private fun SmsTransactionPromptContent(
                 )
                 Text(
                     text = amount.toString(),
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.primary
                 )
             }
@@ -254,7 +254,7 @@ private fun SmsTransactionPromptContent(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "Category",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 CategoryDropdown(
@@ -269,7 +269,7 @@ private fun SmsTransactionPromptContent(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "Description (optional)",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 OutlinedTextField(
@@ -307,7 +307,7 @@ private fun SmsTransactionPromptContent(
             ) {
                 Text(
                     text = "Save",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onPrimary
                 )

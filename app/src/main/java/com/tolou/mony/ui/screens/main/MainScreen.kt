@@ -44,7 +44,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -650,4 +649,5 @@ private fun ordinalSuffix(day: Int): String {
 
 
 @Composable
-private fun incomeAmountColor() = if (isSystemInDarkTheme()) LightTurquoise else RoyalBlue
+private fun incomeAmountColor() =
+    if (MaterialTheme.colorScheme.background == com.tolou.mony.ui.theme.CharcoalBlack) LightTurquoise else RoyalBlue
