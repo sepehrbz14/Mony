@@ -2,6 +2,7 @@ package com.tolou.mony.notifications
 
 import android.os.Bundle
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -43,7 +44,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tolou.mony.data.SessionStorage
+import com.tolou.mony.data.network.AuthApi
+import com.tolou.mony.data.network.ExpenseApi
+import com.tolou.mony.data.network.IncomeApi
+import com.tolou.mony.data.network.RetrofitInstance
+import com.tolou.mony.ui.data.AuthRepository
+import com.tolou.mony.ui.data.ExpenseRepository
+import com.tolou.mony.ui.data.IncomeRepository
 import com.tolou.mony.ui.theme.MonyTheme
+import kotlinx.coroutines.launch
 
 class SmsTransactionPromptActivity : ComponentActivity() {
 
@@ -63,6 +72,18 @@ class SmsTransactionPromptActivity : ComponentActivity() {
 
         val sessionStorage = SessionStorage(applicationContext)
         val darkModeEnabled = sessionStorage.fetchDarkModeEnabled()
+        val authRepository = AuthRepository(
+            RetrofitInstance.retrofit.create(AuthApi::class.java),
+            sessionStorage
+        )
+        val expenseRepository = ExpenseRepository(
+            RetrofitInstance.retrofit.create(ExpenseApi::class.java),
+            authRepository
+        )
+        val incomeRepository = IncomeRepository(
+            RetrofitInstance.retrofit.create(IncomeApi::class.java),
+            authRepository
+        )
 
         setContent {
             MonyTheme(darkTheme = darkModeEnabled ?: androidx.compose.foundation.isSystemInDarkTheme()) {
@@ -71,14 +92,46 @@ class SmsTransactionPromptActivity : ComponentActivity() {
                     categories = categories,
                     onCancel = { finish() },
                     onSave = { category, description ->
-                        Toast.makeText(
-                            this@SmsTransactionPromptActivity,
-                            "Saved: $category",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        lifecycleScope.launch {
+                            val title = if (description.isBlank()) {
+                                category
+                            } else {
+                                "$category: $description"
+                            }
+                            val normalizedAmount = kotlin.math.abs(amount)
 
-                        // TODO: Persist amount + category + description in repository.
-                        finish()
+                            val result = runCatching {
+                                when (parsedType) {
+                                    ParsedTransactionType.INCOME -> {
+                                        incomeRepository.addIncome(title, normalizedAmount)
+                                    }
+
+                                    ParsedTransactionType.EXPENSE -> {
+                                        expenseRepository.addExpense(title, normalizedAmount)
+                                    }
+
+                                    ParsedTransactionType.UNKNOWN -> {
+                                        error("Unsupported transaction type")
+                                    }
+                                }
+                            }
+
+                            if (result.isSuccess) {
+                                Toast.makeText(
+                                    this@SmsTransactionPromptActivity,
+                                    "Transaction saved",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                finish()
+                            } else {
+                                Toast.makeText(
+                                    this@SmsTransactionPromptActivity,
+                                    result.exceptionOrNull()?.localizedMessage
+                                        ?: "Failed to save transaction",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
                     }
                 )
             }
