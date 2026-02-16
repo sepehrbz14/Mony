@@ -5,30 +5,45 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.weight
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.tolou.mony.data.SessionStorage
+import com.tolou.mony.ui.theme.MonyTheme
 
 class SmsTransactionPromptActivity : ComponentActivity() {
 
@@ -36,89 +51,256 @@ class SmsTransactionPromptActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val amount = intent.getLongExtra(EXTRA_AMOUNT, 0L)
+        val parsedType = intent.getStringExtra(EXTRA_TRANSACTION_TYPE)
+            ?.let { runCatching { ParsedTransactionType.valueOf(it) }.getOrNull() }
+            ?: ParsedTransactionType.UNKNOWN
+
+        val categories = when (parsedType) {
+            ParsedTransactionType.INCOME -> INCOME_CATEGORIES
+            ParsedTransactionType.EXPENSE -> EXPENSE_CATEGORIES
+            ParsedTransactionType.UNKNOWN -> EXPENSE_CATEGORIES
+        }
+
+        val sessionStorage = SessionStorage(applicationContext)
+        val darkModeEnabled = sessionStorage.fetchDarkModeEnabled()
 
         setContent {
-            MaterialTheme {
-                var category by rememberSaveable { mutableStateOf("") }
-                var description by rememberSaveable { mutableStateOf("") }
+            MonyTheme(darkTheme = darkModeEnabled ?: androidx.compose.foundation.isSystemInDarkTheme()) {
+                SmsTransactionPromptContent(
+                    amount = amount,
+                    categories = categories,
+                    onCancel = { finish() },
+                    onSave = { category, description ->
+                        Toast.makeText(
+                            this@SmsTransactionPromptActivity,
+                            "Saved: $category",
+                            Toast.LENGTH_SHORT
+                        ).show()
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.35f))
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(20.dp)) {
-                            Text(
-                                text = "Bank SMS detected",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Amount: $amount",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            OutlinedTextField(
-                                value = category,
-                                onValueChange = { category = it },
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text("Category") },
-                                singleLine = true
-                            )
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            OutlinedTextField(
-                                value = description,
-                                onValueChange = { description = it },
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text("Description") },
-                                maxLines = 4
-                            )
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                TextButton(onClick = { finish() }) {
-                                    Text("Cancel")
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Button(
-                                    onClick = {
-                                        Toast.makeText(
-                                            this@SmsTransactionPromptActivity,
-                                            "Transaction captured",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-
-                                        // TODO: Persist amount + category + description in repository.
-                                        finish()
-                                    },
-                                    enabled = category.isNotBlank()
-                                ) {
-                                    Text("Save")
-                                }
-                            }
-                        }
+                        // TODO: Persist amount + category + description in repository.
+                        finish()
                     }
-                }
+                )
             }
         }
     }
 
     companion object {
         const val EXTRA_AMOUNT = "extra_amount"
+        const val EXTRA_TRANSACTION_TYPE = "extra_transaction_type"
+
+        private val INCOME_CATEGORIES = listOf(
+            "Salary",
+            "Business",
+            "Freelance",
+            "Bonus",
+            "Commission",
+            "Rental",
+            "Interest",
+            "Gift",
+            "Refund",
+            "Investment",
+            "Side Hustle",
+            "Other"
+        )
+
+        private val EXPENSE_CATEGORIES = listOf(
+            "Food",
+            "Groceries",
+            "Dining",
+            "Transport",
+            "Fuel",
+            "Rent",
+            "Mortgage",
+            "Home Supplies",
+            "Entertainment",
+            "Utilities",
+            "Healthcare",
+            "Shopping",
+            "Personal Care",
+            "Education",
+            "Travel",
+            "Insurance",
+            "Subscriptions",
+            "Gifts",
+            "Charity",
+            "Taxes",
+            "Fees",
+            "Pets",
+            "Childcare",
+            "Other"
+        )
+    }
+}
+
+@Composable
+private fun SmsTransactionPromptContent(
+    amount: Long,
+    categories: List<String>,
+    onCancel: () -> Unit,
+    onSave: (category: String, description: String) -> Unit
+) {
+    var selectedCategory by rememberSaveable { mutableStateOf(categories.first()) }
+    var description by rememberSaveable { mutableStateOf("") }
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Detected transaction",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold
+            )
+            TextButton(
+                onClick = onCancel,
+                modifier = Modifier.align(Alignment.CenterEnd)
+            ) {
+                Text("Cancel")
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(20.dp)
+                )
+                .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(20.dp))
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Amount",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+            Text(
+                text = amount.toString(),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = "Category",
+                style = MaterialTheme.typography.labelLarge
+            )
+            CategoryDropdown(
+                selectedCategory = selectedCategory,
+                categories = categories,
+                expanded = expanded,
+                onExpandedChange = { expanded = it },
+                onCategorySelected = { selectedCategory = it }
+            )
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = "Description (optional)",
+                style = MaterialTheme.typography.labelLarge
+            )
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                placeholder = { Text("Add a note") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                singleLine = true,
+                shape = RoundedCornerShape(20.dp),
+                colors = TextFieldDefaults.colors(
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            onClick = { onSave(selectedCategory, description.trim()) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
+            shape = RoundedCornerShape(28.dp)
+        ) {
+            Text(
+                text = "Save",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CategoryDropdown(
+    selectedCategory: String,
+    categories: List<String>,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onCategorySelected: (String) -> Unit
+) {
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = onExpandedChange
+    ) {
+        OutlinedTextField(
+            value = selectedCategory,
+            onValueChange = {},
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .menuAnchor(),
+            readOnly = true,
+            shape = RoundedCornerShape(20.dp),
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowDown,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            colors = TextFieldDefaults.colors(
+                unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary
+            )
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { onExpandedChange(false) },
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surface)
+                .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
+        ) {
+            categories.forEach { category ->
+                DropdownMenuItem(
+                    text = { Text(category, color = MaterialTheme.colorScheme.onSurface) },
+                    onClick = {
+                        onCategorySelected(category)
+                        onExpandedChange(false)
+                    }
+                )
+            }
+        }
     }
 }

@@ -29,13 +29,15 @@ class BankNotificationListenerService : NotificationListenerService() {
             "template=${parsed.templateType}, type=${parsed.type}, amount=${parsed.amount}, raw=${parsed.rawMessage}"
         )
 
-        if (parsed.amount == 0L || parsed.type == ParsedTransactionType.UNKNOWN) {
+        val isSupportedTemplate = parsed.templateType != TemplateType.FALLBACK
+        if (!isSupportedTemplate || parsed.amount == 0L || parsed.type == ParsedTransactionType.UNKNOWN) {
             return
         }
 
         val popupIntent = Intent(this, SmsTransactionPromptActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             putExtra(SmsTransactionPromptActivity.EXTRA_AMOUNT, parsed.amount)
+            putExtra(SmsTransactionPromptActivity.EXTRA_TRANSACTION_TYPE, parsed.type.name)
         }
         startActivity(popupIntent)
     }
