@@ -1,7 +1,9 @@
 package com.tolou.mony.notifications
 
 import android.os.Bundle
+import android.graphics.Color
 import android.widget.Toast
+import android.graphics.drawable.ColorDrawable
 import androidx.lifecycle.lifecycleScope
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -56,6 +58,8 @@ class SmsTransactionPromptActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.setDimAmount(0f)
+        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         val amount = intent.getLongExtra(EXTRA_AMOUNT, 0L)
         val parsedType = intent.getStringExtra(EXTRA_TRANSACTION_TYPE)
@@ -200,7 +204,7 @@ private fun SmsTransactionPromptContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.72f)),
+            .background(androidx.compose.ui.graphics.Color.Transparent),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -220,10 +224,11 @@ private fun SmsTransactionPromptContent(
                 Text(
                     text = "Detected transaction",
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 TextButton(onClick = onCancel) {
-                    Text("Cancel")
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 
@@ -249,7 +254,8 @@ private fun SmsTransactionPromptContent(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "Category",
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 CategoryDropdown(
                     selectedCategory = selectedCategory,
@@ -263,12 +269,13 @@ private fun SmsTransactionPromptContent(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "Description (optional)",
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    placeholder = { Text("Add a note") },
+                    placeholder = { Text("Add a note", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
@@ -280,7 +287,9 @@ private fun SmsTransactionPromptContent(
                         disabledContainerColor = inputBackground,
                         unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
                         focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                        cursorColor = MaterialTheme.colorScheme.primary
+                        cursorColor = MaterialTheme.colorScheme.primary,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                     )
                 )
             }
@@ -299,7 +308,8 @@ private fun SmsTransactionPromptContent(
                 Text(
                     text = "Save",
                     style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }
@@ -324,10 +334,10 @@ private fun CategoryDropdown(
             onValueChange = {},
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
+                .height(52.dp)
                 .menuAnchor(),
             readOnly = true,
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(12.dp),
             trailingIcon = {
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowDown,
@@ -342,7 +352,9 @@ private fun CategoryDropdown(
                 disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f),
                 unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
                 focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                cursorColor = MaterialTheme.colorScheme.primary
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
             )
         )
         DropdownMenu(

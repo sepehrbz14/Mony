@@ -44,6 +44,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -83,6 +84,7 @@ import com.tolou.mony.ui.theme.AlertRed
 import com.tolou.mony.ui.theme.NeutralGray
 import com.tolou.mony.ui.theme.PureBlack
 import com.tolou.mony.ui.theme.PureWhite
+import com.tolou.mony.ui.theme.LightTurquoise
 import com.tolou.mony.ui.theme.RoyalBlue
 
 
@@ -349,7 +351,7 @@ fun MainScreen(
                 Text(
                     text = "${if (transaction.isIncome) "+" else "-"}$${"%,.2f".format(transaction.amount / 1.0)}",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = if (transaction.isIncome) RoyalBlue else AlertRed
+                    color = if (transaction.isIncome) incomeAmountColor() else AlertRed
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -437,7 +439,7 @@ private fun TransactionRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     onClick: () -> Unit
 ) {
-    val amountColor = if (isIncome) RoyalBlue else AlertRed
+    val amountColor = if (isIncome) incomeAmountColor() else AlertRed
     val amountPrefix = if (isIncome) "+" else "-"
     Card(
         modifier = Modifier
@@ -645,3 +647,7 @@ private fun ordinalSuffix(day: Int): String {
         else -> "th"
     }
 }
+
+
+@Composable
+private fun incomeAmountColor() = if (isSystemInDarkTheme()) LightTurquoise else RoyalBlue
