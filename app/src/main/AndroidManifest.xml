@@ -25,6 +25,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".notifications.SmsTransactionPromptActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@style/Theme.Mony.Popup" />
         <service
             android:name=".notifications.BankNotificationListenerService"
             android:exported="false"

@@ -1,5 +1,6 @@
 package com.tolou.mony.notifications
 
+import android.content.Intent
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
@@ -28,6 +29,14 @@ class BankNotificationListenerService : NotificationListenerService() {
             "template=${parsed.templateType}, type=${parsed.type}, amount=${parsed.amount}, raw=${parsed.rawMessage}"
         )
 
-        // TODO: Persist parsed transaction by wiring to local/remote repository.
+        if (parsed.amount == 0L || parsed.type == ParsedTransactionType.UNKNOWN) {
+            return
+        }
+
+        val popupIntent = Intent(this, SmsTransactionPromptActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            putExtra(SmsTransactionPromptActivity.EXTRA_AMOUNT, parsed.amount)
+        }
+        startActivity(popupIntent)
     }
 }

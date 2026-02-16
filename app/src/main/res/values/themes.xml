@@ -2,4 +2,6 @@
 <resources>
 
     <style name="Theme.Mony" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.Mony.Popup" parent="android:Theme.Material.Light.Dialog.NoActionBar" />
 </resources>
