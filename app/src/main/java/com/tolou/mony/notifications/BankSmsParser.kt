@@ -72,9 +72,11 @@ object BankSmsParser {
         val normalized = preprocess(text)
         val hasSignedNumber = SmsRegexPatterns.signedNumber.containsMatchIn(normalized)
 
-        val isType1 = normalized.contains("حساب") &&
-            (normalized.contains("مانده") || normalized.contains("موجودی")) &&
-            hasSignedNumber
+        val hasBalanceKeyword = normalized.contains("مانده") || normalized.contains("موجودی")
+        val hasAccountKeyword = normalized.contains("حساب")
+        val hasBalanceValue = SmsRegexPatterns.balanceAfterKeywords.containsMatchIn(normalized)
+
+        val isType1 = hasBalanceKeyword && hasSignedNumber && (hasAccountKeyword || hasBalanceValue)
         if (isType1) return TemplateType.TYPE_1
 
         val isType2 = normalized.contains("مبلغ") &&
@@ -292,6 +294,10 @@ object BankSmsParser {
             parseDateTimeWithPatterns(it)?.let { parsed -> return parsed }
         }
 
+        SmsRegexPatterns.monthDayUnderscoreTime.find(normalized)?.groupValues?.get(1)?.let {
+            parseMonthDayTimeWithCurrentYear(it)?.let { parsed -> return parsed }
+        }
+
         val date = SmsRegexPatterns.dateOnly.find(normalized)?.groupValues?.get(1)?.let(::parseDate)
         val time = SmsRegexPatterns.timeOnly.find(normalized)?.groupValues?.get(1)?.let(::parseTime)
 
@@ -316,6 +322,23 @@ object BankSmsParser {
         }
 
         return null
+    }
+
+
+    private fun parseMonthDayTimeWithCurrentYear(value: String): LocalDateTime? {
+        val parts = value.split("_")
+        if (parts.size != 2) return null
+
+        val dateParts = parts[0].split("/")
+        if (dateParts.size != 2) return null
+
+        val month = dateParts[0].toIntOrNull() ?: return null
+        val day = dateParts[1].toIntOrNull() ?: return null
+        val time = parseTime(parts[1]) ?: return null
+
+        return runCatching {
+            LocalDateTime.of(LocalDate.now().year, month, day, time.hour, time.minute, time.second)
+        }.getOrNull()
     }
 
     private fun parseDate(value: String): LocalDate? {

@@ -12,4 +12,5 @@ object SmsRegexPatterns {
     val dateTime = Regex("(\\d{4}[/-]\\d{1,2}[/-]\\d{1,2}\\s+\\d{1,2}:\\d{1,2}(?::\\d{1,2})?)")
     val dateOnly = Regex("(\\d{4}[/-]\\d{1,2}[/-]\\d{1,2})")
     val timeOnly = Regex("(\\d{1,2}:\\d{1,2}(?::\\d{1,2})?)")
+    val monthDayUnderscoreTime = Regex("(\\d{1,2}/\\d{1,2}_\\d{1,2}:\\d{1,2})")
 }

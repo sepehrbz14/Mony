@@ -95,4 +95,24 @@ class BankSmsParserTest {
         assertEquals(0L, transaction.amount)
         assertEquals(ParsedTransactionType.UNKNOWN, transaction.type)
     }
+
+    @Test
+    fun `detect and parse balance format without hesab`() {
+        val sms = """
+            777.888.24033008.1
+            +41,401,031
+            11/26_21:55
+            مانده: 42,211,570
+        """.trimIndent()
+
+        val template = BankSmsParser.detectTemplate(sms)
+        val transaction = BankSmsParser.parse(sms)
+
+        assertEquals(TemplateType.TYPE_1, template)
+        assertEquals(TemplateType.TYPE_1, transaction.templateType)
+        assertEquals(41401031L, transaction.amount)
+        assertEquals(42211570L, transaction.balance)
+        assertEquals(ParsedTransactionType.INCOME, transaction.type)
+    }
+
 }
