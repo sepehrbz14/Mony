@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -50,6 +51,8 @@ fun SettingsScreen(
     isChangingPassword: Boolean,
     changePasswordError: String?,
     changePasswordSuccess: String?,
+    isNotificationAccessEnabled: Boolean,
+    onNotificationAccessClick: () -> Unit,
     onLogout: () -> Unit
 ) {
     val inputShape = RoundedCornerShape(20.dp)
@@ -97,6 +100,31 @@ fun SettingsScreen(
                     uncheckedTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
                 )
             )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = "Notification access", style = MaterialTheme.typography.labelLarge)
+                Text(
+                    text = if (isNotificationAccessEnabled) {
+                        "Enabled (bank SMS detection is active)"
+                    } else {
+                        "Disabled (required for automatic SMS transaction detection)"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+            }
+            Spacer(modifier = Modifier.size(12.dp))
+            Button(
+                onClick = onNotificationAccessClick,
+                shape = RoundedCornerShape(18.dp)
+            ) {
+                Text(if (isNotificationAccessEnabled) "Manage" else "Enable")
+            }
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

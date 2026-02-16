@@ -1,5 +1,13 @@
 package com.tolou.mony.ui.navigation
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.provider.Settings
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.tolou.mony.notifications.NotificationAccessHelper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -47,6 +55,7 @@ fun AppNavGraph(
 ) {
     val context = LocalContext.current
     val navController = rememberNavController()
+    val lifecycleOwner = LocalLifecycleOwner.current
     val sessionStorage = remember { SessionStorage(context) }
     var username by remember { mutableStateOf(sessionStorage.fetchUsername().orEmpty()) }
     val authRepository = remember {
@@ -88,6 +97,22 @@ fun AppNavGraph(
     var isChangingPassword by remember { mutableStateOf(false) }
     var changePasswordError by remember { mutableStateOf<String?>(null) }
     var changePasswordSuccess by remember { mutableStateOf<String?>(null) }
+    var isNotificationAccessEnabled by remember {
+        mutableStateOf(NotificationAccessHelper.isNotificationListenerEnabled(context))
+    }
+
+    DisposableEffect(lifecycleOwner, context) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                isNotificationAccessEnabled =
+                    NotificationAccessHelper.isNotificationListenerEnabled(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     val startDestination = if (authRepository.token().isNullOrBlank()) {
         NavRoutes.Welcome.route
@@ -280,6 +305,19 @@ fun AppNavGraph(
                 isChangingPassword = isChangingPassword,
                 changePasswordError = changePasswordError,
                 changePasswordSuccess = changePasswordSuccess,
+                isNotificationAccessEnabled = isNotificationAccessEnabled,
+                onNotificationAccessClick = {
+                    val intent = NotificationAccessHelper.buildSettingsIntent()
+                    try {
+                        context.startActivity(intent)
+                    } catch (_: ActivityNotFoundException) {
+                        context.startActivity(
+                            Intent(Settings.ACTION_SETTINGS).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                        )
+                    }
+                },
                 onLogout = {
                     authRepository.clearSession()
                     username = ""
