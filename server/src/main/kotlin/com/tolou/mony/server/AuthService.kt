@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.minus
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
@@ -65,6 +66,8 @@ class AuthService(
             throw IllegalArgumentException("Phone and password are required.")
         }
 
+        purgeExpiredChallenges()
+
         val challengeId = UUID.randomUUID().toString()
         val otp = generateOtpCode()
         val now = Instant.now()
@@ -108,6 +111,8 @@ class AuthService(
             throw IllegalArgumentException("Challenge ID and code are required.")
         }
 
+        purgeExpiredChallenges()
+
         val challenge = newSuspendedTransaction(Dispatchers.IO) {
             SignupChallengesTable
                 .selectAll()
@@ -116,11 +121,17 @@ class AuthService(
         } ?: throw IllegalArgumentException("Invalid or expired signup code.")
 
         if (challenge[SignupChallengesTable.consumedAt] != null) {
+            newSuspendedTransaction(Dispatchers.IO) {
+                SignupChallengesTable.deleteWhere { SignupChallengesTable.id eq challengeId }
+            }
             throw IllegalArgumentException("This challenge has already been used.")
         }
 
         val now = Instant.now()
         if (challenge[SignupChallengesTable.expiresAt].isBefore(now)) {
+            newSuspendedTransaction(Dispatchers.IO) {
+                SignupChallengesTable.deleteWhere { SignupChallengesTable.id eq challengeId }
+            }
             throw IllegalArgumentException("Signup code has expired.")
         }
 
@@ -161,14 +172,20 @@ class AuthService(
                 it[UsersTable.createdAt] = now
             } get UsersTable.id
 
-            SignupChallengesTable.update({ SignupChallengesTable.id eq challengeId }) {
-                it[consumedAt] = now
-            }
+            SignupChallengesTable.deleteWhere { SignupChallengesTable.id eq challengeId }
 
             AuthResponse(createToken(userId, phone))
         }
 
         return response
+    }
+
+
+    private suspend fun purgeExpiredChallenges() {
+        val now = Instant.now()
+        newSuspendedTransaction(Dispatchers.IO) {
+            SignupChallengesTable.deleteWhere { SignupChallengesTable.expiresAt less now }
+        }
     }
 
     private fun createToken(userId: Int, phone: String): String {
