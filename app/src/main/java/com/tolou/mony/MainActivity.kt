@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import com.tolou.mony.data.SessionStorage
 import com.tolou.mony.ui.navigation.AppNavGraph
+import com.tolou.mony.notifications.NotificationAccessHelper
 import com.tolou.mony.ui.theme.MonyTheme
 
 class MainActivity : ComponentActivity() {
@@ -25,6 +26,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
             val sessionStorage = remember { SessionStorage(context) }
+            remember(context) {
+                NotificationAccessHelper.ensureListenerRunning(context)
+                Unit
+            }
             val systemDarkMode = isSystemInDarkTheme()
             var darkModeEnabled by remember {
                 mutableStateOf(sessionStorage.fetchDarkModeEnabled() ?: systemDarkMode)

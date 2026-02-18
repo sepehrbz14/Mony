@@ -106,6 +106,9 @@ fun AppNavGraph(
             if (event == Lifecycle.Event.ON_RESUME) {
                 isNotificationAccessEnabled =
                     NotificationAccessHelper.isNotificationListenerEnabled(context)
+                if (isNotificationAccessEnabled) {
+                    NotificationAccessHelper.ensureListenerRunning(context)
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
