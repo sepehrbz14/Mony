@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.minus
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.javatime.timestamp
 import org.jetbrains.exposed.sql.selectAll
@@ -16,7 +17,10 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
-class AuthService(private val jwtConfig: JwtConfig) {
+class AuthService(
+    private val jwtConfig: JwtConfig,
+    private val otpSender: OtpSender
+) {
 
     suspend fun register(request: RegisterRequest): AuthResponse {
         val normalizedPhone = request.phone.trim()
@@ -80,7 +84,14 @@ class AuthService(private val jwtConfig: JwtConfig) {
             }
         }
 
-        println("[OTP][DEBUG] challengeId=$challengeId phone=$normalizedPhone otp=$otp expiresAt=$expiresAt")
+        try {
+            otpSender.sendOtp(normalizedPhone, otp)
+        } catch (e: Exception) {
+            newSuspendedTransaction(Dispatchers.IO) {
+                SignupChallengesTable.deleteWhere { SignupChallengesTable.id eq challengeId }
+            }
+            throw IllegalArgumentException("Failed to send verification code. Please try again.")
+        }
 
         return SignupChallengeResponse(
             challengeId = challengeId,

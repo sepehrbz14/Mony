@@ -22,6 +22,12 @@ fun Application.module() {
     DatabaseFactory(environment.config)
     val jwtConfig = JwtConfig.fromConfig(environment.config)
 
+    val otpSender: OtpSender = SmsIrOtpSender(
+        apiKey = environment.config.propertyOrNull("smsIr.apiKey")?.getString().orEmpty(),
+        templateId = environment.config.propertyOrNull("smsIr.templateId")?.getString()?.toIntOrNull() ?: 567011,
+        baseUrl = environment.config.propertyOrNull("smsIr.baseUrl")?.getString() ?: "https://api.sms.ir/v1/"
+    )
+
     install(ContentNegotiation) {
         json()
     }
@@ -50,7 +56,7 @@ fun Application.module() {
         get("/health") {
             call.respond(mapOf("status" to "ok"))
         }
-        authRoutes(AuthService(jwtConfig))
+        authRoutes(AuthService(jwtConfig, otpSender))
         expenseRoutes()
         incomeRoutes()
         userRoutes()
