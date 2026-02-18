@@ -52,6 +52,7 @@ import com.tolou.mony.ui.data.AuthRepository
 import com.tolou.mony.ui.data.ExpenseRepository
 import com.tolou.mony.ui.data.IncomeRepository
 import com.tolou.mony.ui.theme.MonyTheme
+import com.tolou.mony.ui.utils.formatRial
 import kotlinx.coroutines.launch
 
 class SmsTransactionPromptActivity : ComponentActivity() {
@@ -245,7 +246,7 @@ private fun SmsTransactionPromptContent(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
                 Text(
-                    text = amount.toString(),
+                    text = formatRial(amount),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.primary
                 )

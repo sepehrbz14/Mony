@@ -9,6 +9,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.tolou.mony.R
+import com.tolou.mony.ui.utils.formatRial
 import kotlin.random.Random
 
 object TransactionDetectionNotifier {
@@ -30,7 +31,7 @@ object TransactionDetectionNotifier {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val body = "Detected ${transaction.amount}. Tap to review and save"
+        val body = "Detected ${formatRial(transaction.amount)}. Tap to review and save"
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)

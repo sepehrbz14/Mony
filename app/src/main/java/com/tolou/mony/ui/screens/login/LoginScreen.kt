@@ -30,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -255,12 +254,12 @@ private fun PrimaryAuthButton(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)
     ) {
         if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
+            CircularProgressIndicator(modifier = Modifier.size(20.dp), color = MaterialTheme.colorScheme.background)
         } else {
-            Text(text = text, color = Color.White)
+            Text(text = text, color = MaterialTheme.colorScheme.background)
         }
     }
 }

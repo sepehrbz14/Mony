@@ -10,11 +10,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import java.text.NumberFormat
+import com.tolou.mony.ui.utils.formatRial
 
 @Composable
 fun TotalIncomeCard(total: Long) {
-    val formattedTotal = NumberFormat.getCurrencyInstance().format(total)
+    val formattedTotal = formatRial(total)
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(4.dp)

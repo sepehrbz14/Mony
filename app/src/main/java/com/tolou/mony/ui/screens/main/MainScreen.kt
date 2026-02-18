@@ -81,10 +81,9 @@ import java.util.Locale
 import kotlin.math.roundToInt
 import com.tolou.mony.ui.theme.AlertRed
 import com.tolou.mony.ui.theme.NeutralGray
-import com.tolou.mony.ui.theme.PureBlack
 import com.tolou.mony.ui.theme.PureWhite
-import com.tolou.mony.ui.theme.LightTurquoise
-import com.tolou.mony.ui.theme.RoyalBlue
+import com.tolou.mony.ui.utils.formatRial
+import com.tolou.mony.ui.utils.formatSignedRial
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -189,7 +188,7 @@ fun MainScreen(
                     style = MaterialTheme.typography.labelLarge
                 )
                 Text(
-                    text = "$${"%,.2f".format(currentBalance / 1.0)}",
+                    text = formatRial(currentBalance),
                     style = MaterialTheme.typography.displaySmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -264,8 +263,8 @@ fun MainScreen(
                 .align(Alignment.BottomCenter)
                 .padding(16.dp)
                 .size(64.dp),
-            containerColor = PureBlack,
-            contentColor = PureWhite,
+            containerColor = MaterialTheme.colorScheme.onSurface,
+            contentColor = MaterialTheme.colorScheme.background,
             shape = CircleShape
         ) {
             Icon(
@@ -348,7 +347,7 @@ fun MainScreen(
                     )
                 }
                 Text(
-                    text = "${if (transaction.isIncome) "+" else "-"}$${"%,.2f".format(transaction.amount / 1.0)}",
+                    text = formatSignedRial(if (transaction.isIncome) transaction.amount else -transaction.amount),
                     style = MaterialTheme.typography.bodyLarge,
                     color = if (transaction.isIncome) incomeAmountColor() else AlertRed
                 )
@@ -420,7 +419,7 @@ private fun MonthlyBudgetCard(
                     color = MaterialTheme.colorScheme.onPrimary
                 )
                 Text(
-                    text = "$${"%,.2f".format(spent / 1.0)} / $${"%,.0f".format(budget / 1.0)}",
+                    text = "${formatRial(spent)} / ${formatRial(budget)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
@@ -439,7 +438,6 @@ private fun TransactionRow(
     onClick: () -> Unit
 ) {
     val amountColor = if (isIncome) incomeAmountColor() else AlertRed
-    val amountPrefix = if (isIncome) "+" else "-"
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -488,7 +486,7 @@ private fun TransactionRow(
                 label = "amountChange"
             ) { animatedAmount ->
                 Text(
-                    text = "$amountPrefix$${"%,.2f".format(animatedAmount / 1.0)}",
+                    text = formatSignedRial(if (isIncome) animatedAmount else -animatedAmount),
                     color = amountColor,
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -649,5 +647,4 @@ private fun ordinalSuffix(day: Int): String {
 
 
 @Composable
-private fun incomeAmountColor() =
-    if (MaterialTheme.colorScheme.background == com.tolou.mony.ui.theme.CharcoalBlack) LightTurquoise else RoyalBlue
+private fun incomeAmountColor() = MaterialTheme.colorScheme.primary

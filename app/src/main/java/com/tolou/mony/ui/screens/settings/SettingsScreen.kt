@@ -29,7 +29,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.tolou.mony.ui.theme.AlertRed
-import com.tolou.mony.ui.theme.RoyalBlue
 
 @Composable
 fun SettingsScreen(
@@ -241,7 +240,7 @@ fun SettingsScreen(
         }
 
         if (!changePasswordSuccess.isNullOrBlank()) {
-            Text(changePasswordSuccess, color = RoyalBlue)
+            Text(changePasswordSuccess, color = MaterialTheme.colorScheme.primary)
         }
 
         Button(
