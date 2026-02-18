@@ -63,6 +63,7 @@ class SmsTransactionPromptActivity : ComponentActivity() {
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         val amount = intent.getLongExtra(EXTRA_AMOUNT, 0L)
+        val pendingId = intent.getStringExtra(EXTRA_PENDING_ID)
         val parsedType = intent.getStringExtra(EXTRA_TRANSACTION_TYPE)
             ?.let { runCatching { ParsedTransactionType.valueOf(it) }.getOrNull() }
             ?: ParsedTransactionType.UNKNOWN
@@ -120,6 +121,7 @@ class SmsTransactionPromptActivity : ComponentActivity() {
                             }
 
                             if (result.isSuccess) {
+                                pendingId?.let { PendingTransactionStore(applicationContext).remove(it) }
                                 Toast.makeText(
                                     this@SmsTransactionPromptActivity,
                                     "Transaction saved",
@@ -144,6 +146,7 @@ class SmsTransactionPromptActivity : ComponentActivity() {
     companion object {
         const val EXTRA_AMOUNT = "extra_amount"
         const val EXTRA_TRANSACTION_TYPE = "extra_transaction_type"
+        const val EXTRA_PENDING_ID = "extra_pending_id"
 
         private val INCOME_CATEGORIES = listOf(
             "Salary",
@@ -224,7 +227,7 @@ private fun SmsTransactionPromptContent(
             ) {
                 Text(
                     text = "Detected transaction",
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -242,12 +245,12 @@ private fun SmsTransactionPromptContent(
             ) {
                 Text(
                     text = "Amount",
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
                 Text(
                     text = formatRial(amount),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
             }
@@ -255,7 +258,7 @@ private fun SmsTransactionPromptContent(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "Category",
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 CategoryDropdown(
@@ -270,7 +273,7 @@ private fun SmsTransactionPromptContent(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "Description (optional)",
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 OutlinedTextField(
@@ -308,7 +311,7 @@ private fun SmsTransactionPromptContent(
             ) {
                 Text(
                     text = "Save",
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onPrimary
                 )

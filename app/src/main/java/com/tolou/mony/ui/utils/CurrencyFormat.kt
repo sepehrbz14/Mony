@@ -11,7 +11,7 @@ fun formatRial(value: Long): String {
         absolute >= 100_000 -> "${absolute / 1_000} Thousand"
         else -> "%,d".format(absolute)
     }
-    return "$RIAL_SYMBOL $compact"
+    return "$compact $RIAL_SYMBOL"
 }
 
 fun formatSignedRial(value: Long): String {

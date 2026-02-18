@@ -55,6 +55,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.LocalGasStation
@@ -92,6 +93,7 @@ fun MainScreen(
     viewModel: MainViewModel,
     username: String,
     onSettingsClick: () -> Unit,
+    onPendingClick: () -> Unit,
     onAddTransactionClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -172,13 +174,23 @@ fun MainScreen(
                         color = NeutralGray
                     )
                 }
-                IconButton(onClick = onSettingsClick) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Settings",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(40.dp)
-                    )
+                Row {
+                    IconButton(onClick = onPendingClick) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "Pending transactions",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
                 }
             }
 

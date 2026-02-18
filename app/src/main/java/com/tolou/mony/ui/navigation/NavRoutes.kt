@@ -8,4 +8,5 @@ sealed class NavRoutes(val route: String) {
     object AddTransaction : NavRoutes("add-transaction")
     object Settings : NavRoutes("settings")
     object Verify : NavRoutes("verify")
+    object PendingTransactions : NavRoutes("pending-transactions")
 }

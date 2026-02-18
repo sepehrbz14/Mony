@@ -27,6 +27,7 @@ import com.tolou.mony.data.network.RetrofitInstance
 import com.tolou.mony.data.network.SmsApi
 import com.tolou.mony.data.network.SmsRetrofitInstance
 import com.tolou.mony.data.network.UserApi
+import com.tolou.mony.notifications.PendingTransactionStore
 import com.tolou.mony.ui.data.AuthRepository
 import com.tolou.mony.ui.data.ExpenseRepository
 import com.tolou.mony.ui.data.IncomeRepository
@@ -41,6 +42,7 @@ import com.tolou.mony.ui.screens.login.WelcomeScreen
 import com.tolou.mony.ui.screens.main.MainScreen
 import com.tolou.mony.ui.screens.main.MainViewModel
 import com.tolou.mony.ui.screens.main.MainViewModelFactory
+import com.tolou.mony.ui.screens.pending.PendingTransactionsScreen
 import com.tolou.mony.ui.screens.settings.SettingsScreen
 import com.tolou.mony.ui.screens.transaction.AddTransactionScreen
 import com.tolou.mony.ui.screens.transaction.TransactionType
@@ -57,6 +59,7 @@ fun AppNavGraph(
     val navController = rememberNavController()
     val lifecycleOwner = LocalLifecycleOwner.current
     val sessionStorage = remember { SessionStorage(context) }
+    val pendingStore = remember { PendingTransactionStore(context) }
     var username by remember { mutableStateOf(sessionStorage.fetchUsername().orEmpty()) }
     val authRepository = remember {
         AuthRepository(
@@ -219,6 +222,9 @@ fun AppNavGraph(
                 onSettingsClick = {
                     navController.navigate(NavRoutes.Settings.route)
                 },
+                onPendingClick = {
+                    navController.navigate(NavRoutes.PendingTransactions.route)
+                },
                 onAddTransactionClick = {
                     navController.navigate(NavRoutes.AddTransaction.route)
                 }
@@ -246,6 +252,24 @@ fun AppNavGraph(
                         TransactionType.Expense -> viewModel.addExpense(title, amount)
                     }
                     navController.popBackStack()
+                }
+            )
+        }
+
+        composable(NavRoutes.PendingTransactions.route) {
+            val pendingItems = remember { mutableStateOf(pendingStore.getAll()) }
+            PendingTransactionsScreen(
+                items = pendingItems.value,
+                onBack = { navController.popBackStack() },
+                onItemClick = { item ->
+                    navController.popBackStack()
+                    val intent = Intent(context, com.tolou.mony.notifications.SmsTransactionPromptActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        putExtra(com.tolou.mony.notifications.SmsTransactionPromptActivity.EXTRA_AMOUNT, item.amount)
+                        putExtra(com.tolou.mony.notifications.SmsTransactionPromptActivity.EXTRA_TRANSACTION_TYPE, item.type.name)
+                        putExtra(com.tolou.mony.notifications.SmsTransactionPromptActivity.EXTRA_PENDING_ID, item.id)
+                    }
+                    context.startActivity(intent)
                 }
             )
         }

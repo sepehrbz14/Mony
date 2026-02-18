@@ -42,7 +42,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.foundation.border
-import com.tolou.mony.ui.utils.formatRial
 
 enum class TransactionType(val label: String) {
     Income("Income"),
@@ -145,7 +144,7 @@ fun AddTransactionScreen(
                 value = amountInput,
                 onValueChange = { amountInput = it },
                 prefix = { Text("﷼") },
-                placeholder = { Text(formatRial(0)) },
+                placeholder = { Text("0") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),

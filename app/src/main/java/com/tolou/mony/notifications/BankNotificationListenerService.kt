@@ -33,6 +33,7 @@ class BankNotificationListenerService : NotificationListenerService() {
             return
         }
 
-        TransactionDetectionNotifier.notifyDetectedTransaction(this, parsed)
+        val pending = PendingTransactionStore(applicationContext).addDetected(parsed)
+        TransactionDetectionNotifier.notifyDetectedTransaction(this, parsed, pending.id)
     }
 }

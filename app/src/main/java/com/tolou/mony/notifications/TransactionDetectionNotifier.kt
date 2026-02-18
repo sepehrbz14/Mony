@@ -15,13 +15,14 @@ import kotlin.random.Random
 object TransactionDetectionNotifier {
     private const val CHANNEL_ID = "transaction_detection_channel"
 
-    fun notifyDetectedTransaction(context: Context, transaction: Transaction) {
+    fun notifyDetectedTransaction(context: Context, transaction: Transaction, pendingId: String) {
         createChannel(context)
 
         val saveIntent = Intent(context, SmsTransactionPromptActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             putExtra(SmsTransactionPromptActivity.EXTRA_AMOUNT, transaction.amount)
             putExtra(SmsTransactionPromptActivity.EXTRA_TRANSACTION_TYPE, transaction.type.name)
+            putExtra(SmsTransactionPromptActivity.EXTRA_PENDING_ID, pendingId)
         }
 
         val pendingIntent = PendingIntent.getActivity(
