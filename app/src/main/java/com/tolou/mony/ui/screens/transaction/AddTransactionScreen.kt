@@ -42,6 +42,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.foundation.border
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 enum class TransactionType(val label: String) {
     Income("Income"),
@@ -51,13 +56,16 @@ enum class TransactionType(val label: String) {
 @Composable
 fun AddTransactionScreen(
     onBack: () -> Unit,
-    onSubmit: (type: TransactionType, amount: Long, category: String, description: String) -> Unit
+    onSubmit: (type: TransactionType, amount: Long, category: String, description: String, createdAt: String?) -> Unit
 ) {
     var selectedType by remember { mutableStateOf(TransactionType.Expense) }
     var amountInput by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("") }
     var descriptionInput by remember { mutableStateOf("") }
     var categoryExpanded by remember { mutableStateOf(false) }
+    val now = remember { LocalDateTime.now() }
+    var dateInput by remember { mutableStateOf(now.toLocalDate().toString()) }
+    var timeInput by remember { mutableStateOf(now.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"))) }
     val inputShape = RoundedCornerShape(20.dp)
 
     val categories = when (selectedType) {
@@ -196,15 +204,53 @@ fun AddTransactionScreen(
             )
         }
 
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = dateInput,
+                onValueChange = { dateInput = it },
+                modifier = Modifier.weight(1f).height(56.dp),
+                singleLine = true,
+                label = { Text("Date (yyyy-MM-dd)") },
+                shape = inputShape,
+                colors = TextFieldDefaults.colors(
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary
+                )
+            )
+            OutlinedTextField(
+                value = timeInput,
+                onValueChange = { timeInput = it },
+                modifier = Modifier.weight(1f).height(56.dp),
+                singleLine = true,
+                label = { Text("Time (HH:mm)") },
+                shape = inputShape,
+                colors = TextFieldDefaults.colors(
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        }
+
         Button(
             onClick = {
                 val amount = amountInput.toLongOrNull()
                 if (amount != null) {
+                    val createdAt = runCatching {
+                        val date = LocalDate.parse(dateInput)
+                        val time = LocalTime.parse(timeInput)
+                        LocalDateTime.of(date, time)
+                            .atZone(ZoneId.systemDefault())
+                            .toInstant()
+                            .toString()
+                    }.getOrNull()
                     onSubmit(
                         selectedType,
                         amount,
                         selectedCategory,
-                        descriptionInput.trim()
+                        descriptionInput.trim(),
+                        createdAt
                     )
                 }
             },

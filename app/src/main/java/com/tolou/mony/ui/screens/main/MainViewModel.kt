@@ -27,11 +27,11 @@ class MainViewModel(
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState
 
-    fun addIncome(title: String, amount: Long) {
+    fun addIncome(title: String, amount: Long, createdAt: String? = null) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
-                incomeRepository.addIncome(title, amount)
+                incomeRepository.addIncome(title, amount, createdAt)
                 refresh()
             } catch (e: Exception) {
                 _uiState.update {
@@ -44,11 +44,11 @@ class MainViewModel(
         }
     }
 
-    fun addExpense(title: String, amount: Long) {
+    fun addExpense(title: String, amount: Long, createdAt: String? = null) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
-                expenseRepository.addExpense(title, amount)
+                expenseRepository.addExpense(title, amount, createdAt)
                 refresh()
             } catch (e: Exception) {
                 _uiState.update {

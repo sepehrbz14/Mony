@@ -242,15 +242,15 @@ fun AppNavGraph(
             )
             AddTransactionScreen(
                 onBack = { navController.popBackStack() },
-                onSubmit = { type, amount, category, description ->
+                onSubmit = { type, amount, category, description, createdAt ->
                     val title = if (description.isBlank()) {
                         category
                     } else {
                         "$category: $description"
                     }
                     when (type) {
-                        TransactionType.Income -> viewModel.addIncome(title, amount)
-                        TransactionType.Expense -> viewModel.addExpense(title, amount)
+                        TransactionType.Income -> viewModel.addIncome(title, amount, createdAt)
+                        TransactionType.Expense -> viewModel.addExpense(title, amount, createdAt)
                     }
                     navController.popBackStack()
                 }

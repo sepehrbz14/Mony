@@ -215,11 +215,12 @@ private fun SmsTransactionPromptContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(14.dp))
-                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), RoundedCornerShape(14.dp))
-                .padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .padding(horizontal = 12.dp)
+                .fillMaxWidth(0.96f)
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -228,12 +229,12 @@ private fun SmsTransactionPromptContent(
             ) {
                 Text(
                     text = "Detected transaction",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 TextButton(onClick = onCancel) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurface)
+                    Text("Cancel", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 
@@ -251,7 +252,8 @@ private fun SmsTransactionPromptContent(
                 )
                 Text(
                     text = formatRial(amount),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary
                 )
             }
@@ -274,7 +276,7 @@ private fun SmsTransactionPromptContent(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "Description (optional)",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 OutlinedTextField(
@@ -312,7 +314,7 @@ private fun SmsTransactionPromptContent(
             ) {
                 Text(
                     text = "Save",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
