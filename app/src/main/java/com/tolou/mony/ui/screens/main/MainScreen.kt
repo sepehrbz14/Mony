@@ -73,6 +73,7 @@ import androidx.compose.material.icons.filled.Flight
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.ui.text.input.KeyboardType
 import java.time.Instant
 import java.time.ZoneId
@@ -155,7 +156,7 @@ fun MainScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
                 .padding(horizontal = 20.dp, vertical = 24.dp)
-                .padding(bottom = 88.dp),
+                .padding(bottom = 12.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Row(
@@ -234,10 +235,24 @@ fun MainScreen(
                         }
                     }
                     ContentState.Error -> {
-                        Text(uiState.error ?: "Something went wrong.")
+                        Text(uiState.error ?: "Something went wrong.", color = AlertRed)
                     }
                     ContentState.Empty -> {
-                        Text("No transactions yet.")
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    imageVector = Icons.Default.AccessTime,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Text("No transactions yet.")
+                            }
+                        }
                     }
                     ContentState.Content -> {
                         LazyColumn(
@@ -272,8 +287,8 @@ fun MainScreen(
         FloatingActionButton(
             onClick = onAddTransactionClick,
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(16.dp)
+                 .align(Alignment.BottomEnd)
+                 .padding(end = 16.dp, bottom = 16.dp)
                 .size(64.dp),
             containerColor = MaterialTheme.colorScheme.onSurface,
             contentColor = MaterialTheme.colorScheme.background,

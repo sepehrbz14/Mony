@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.tolou.mony.ui.utils.toUserMessage
 
 data class MainUiState(
     val isLoading: Boolean = false,
@@ -36,7 +37,7 @@ class MainViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.localizedMessage ?: "Failed to add income."
+                        error = e.toUserMessage("Failed to add income.")
                     )
                 }
             }
@@ -53,7 +54,7 @@ class MainViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.localizedMessage ?: "Failed to add expense."
+                        error = e.toUserMessage("Failed to add expense.")
                     )
                 }
             }
@@ -73,7 +74,7 @@ class MainViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.localizedMessage ?: "Failed to load expenses."
+                        error = e.toUserMessage("Failed to load expenses.")
                     )
                 }
             }
@@ -94,7 +95,7 @@ class MainViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.localizedMessage ?: "Failed to delete transaction."
+                        error = e.toUserMessage("Failed to delete transaction.")
                     )
                 }
             }

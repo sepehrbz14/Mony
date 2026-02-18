@@ -1,34 +1,30 @@
 package com.tolou.mony.ui.screens.login
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tolou.mony.ui.data.AuthRepository
 import com.tolou.mony.ui.data.SmsRepository
+import com.tolou.mony.ui.utils.toUserMessage
 import kotlinx.coroutines.launch
-
 
 sealed class LoginState {
     object Idle : LoginState()
     object Loading : LoginState()
-    object CodeSent : LoginState()
-    object LoggedIn : LoginState()
+    data class OtpSent(val phone: String) : LoginState()
+    data class LoggedIn(val token: String) : LoginState()
     data class Error(val message: String) : LoginState()
 }
 
 class LoginViewModel(
-    private val authRepository: AuthRepository,
+    private val repository: AuthRepository,
     private val smsRepository: SmsRepository
 ) : ViewModel() {
 
-    var state by mutableStateOf<LoginState>(LoginState.Idle)
+    var state: LoginState = LoginState.Idle
         private set
 
     private var pendingPhone: String? = null
     private var pendingPassword: String? = null
-    private var pendingOtp: String? = null
 
     fun sendSignupCode(phone: String, password: String) {
         if (phone.isBlank() || password.isBlank()) {
@@ -38,38 +34,37 @@ class LoginViewModel(
         viewModelScope.launch {
             state = LoginState.Loading
             try {
-                val code = generateOtpCode()
+                val code = (1000..9999).random().toString()
                 smsRepository.sendOtp(phone, code)
                 pendingPhone = phone
                 pendingPassword = password
-                pendingOtp = code
-                state = LoginState.CodeSent
+                state = LoginState.OtpSent(phone)
             } catch (e: Exception) {
-                state = LoginState.Error(e.localizedMessage ?: "Failed to send OTP")
+                state = LoginState.Error(e.toUserMessage("Failed to send OTP"))
             }
         }
     }
 
-    fun verifySignupCode(code: String) {
+    fun verifySignup(code: String) {
         viewModelScope.launch {
-            state = LoginState.Loading
-            val expected = pendingOtp
             val phone = pendingPhone
             val password = pendingPassword
-            if (expected == null || phone == null || password == null) {
+
+            if (phone == null || password == null) {
                 state = LoginState.Error("Missing signup data. Please try again.")
                 return@launch
             }
-            if (expected != code) {
+            if (code.length != 4) {
                 state = LoginState.Error("Invalid code")
                 return@launch
             }
+
+            state = LoginState.Loading
             try {
-                authRepository.register(phone, password)
-                clearPendingSignup()
-                state = LoginState.LoggedIn
+                val token = repository.register(phone, password)
+                state = LoginState.LoggedIn(token)
             } catch (e: Exception) {
-                state = LoginState.Error(e.localizedMessage ?: "Registration failed")
+                state = LoginState.Error(e.toUserMessage("Registration failed"))
             }
         }
     }
@@ -79,36 +74,15 @@ class LoginViewModel(
             state = LoginState.Error("Phone and password are required.")
             return
         }
+
         viewModelScope.launch {
             state = LoginState.Loading
             try {
-                authRepository.login(phone, password)
-                state = LoginState.LoggedIn
+                val token = repository.login(phone, password)
+                state = LoginState.LoggedIn(token)
             } catch (e: Exception) {
-                state = LoginState.Error(e.localizedMessage ?: "Login failed")
+                state = LoginState.Error(e.toUserMessage("Login failed"))
             }
         }
-    }
-
-    fun consumeLoggedIn() {
-        if (state is LoginState.LoggedIn) {
-            state = LoginState.Idle
-        }
-    }
-
-    fun consumeCodeSent() {
-        if (state is LoginState.CodeSent) {
-            state = LoginState.Idle
-        }
-    }
-
-    private fun clearPendingSignup() {
-        pendingPhone = null
-        pendingPassword = null
-        pendingOtp = null
-    }
-
-    private fun generateOtpCode(): String {
-        return (10000..99999).random().toString()
     }
 }

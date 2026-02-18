@@ -53,6 +53,7 @@ import com.tolou.mony.ui.data.ExpenseRepository
 import com.tolou.mony.ui.data.IncomeRepository
 import com.tolou.mony.ui.theme.MonyTheme
 import com.tolou.mony.ui.utils.formatRial
+import com.tolou.mony.ui.utils.toUserMessage
 import kotlinx.coroutines.launch
 
 class SmsTransactionPromptActivity : ComponentActivity() {
@@ -131,7 +132,7 @@ class SmsTransactionPromptActivity : ComponentActivity() {
                             } else {
                                 Toast.makeText(
                                     this@SmsTransactionPromptActivity,
-                                    result.exceptionOrNull()?.localizedMessage
+                                    result.exceptionOrNull()?.toUserMessage("Failed to save transaction")
                                         ?: "Failed to save transaction",
                                     Toast.LENGTH_LONG
                                 ).show()

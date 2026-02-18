@@ -48,6 +48,7 @@ import com.tolou.mony.ui.screens.transaction.AddTransactionScreen
 import com.tolou.mony.ui.screens.transaction.TransactionType
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
+import com.tolou.mony.ui.utils.toUserMessage
 
 @Composable
 fun AppNavGraph(
@@ -293,7 +294,7 @@ fun AppNavGraph(
                             username = response.username.orEmpty()
                             sessionStorage.saveUsername(username)
                         } catch (e: Exception) {
-                            saveUsernameError = e.localizedMessage ?: "Failed to save username."
+                            saveUsernameError = e.toUserMessage("Failed to save username.")
                         } finally {
                             isSavingUsername = false
                         }
@@ -323,7 +324,7 @@ fun AppNavGraph(
                             changePasswordSuccess = response.message
                         } catch (e: Exception) {
                             changePasswordError =
-                                e.localizedMessage ?: "Failed to update password."
+                                e.toUserMessage("Failed to update password.")
                         } finally {
                             isChangingPassword = false
                         }

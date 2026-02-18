@@ -143,7 +143,7 @@ fun AddTransactionScreen(
             OutlinedTextField(
                 value = amountInput,
                 onValueChange = { amountInput = it },
-                prefix = { Text("﷼") },
+                prefix = { Text("Ե") },
                 placeholder = { Text("0") },
                 modifier = Modifier
                     .fillMaxWidth()
