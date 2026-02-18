@@ -1,30 +1,37 @@
 package com.tolou.mony.ui.screens.login
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tolou.mony.ui.data.AuthRepository
-import com.tolou.mony.ui.data.SmsRepository
 import com.tolou.mony.ui.utils.toUserMessage
 import kotlinx.coroutines.launch
+import java.time.Instant
 
 sealed class LoginState {
     object Idle : LoginState()
     object Loading : LoginState()
-    data class OtpSent(val phone: String) : LoginState()
+    data class OtpSent(
+        val phone: String,
+        val challengeId: String,
+        val expiresAt: String,
+        val remainingAttempts: Int
+    ) : LoginState()
+
     data class LoggedIn(val token: String) : LoginState()
     data class Error(val message: String) : LoginState()
 }
 
 class LoginViewModel(
-    private val repository: AuthRepository,
-    private val smsRepository: SmsRepository
+    private val repository: AuthRepository
 ) : ViewModel() {
 
-    var state: LoginState = LoginState.Idle
+    var state: LoginState by mutableStateOf(LoginState.Idle)
         private set
 
-    private var pendingPhone: String? = null
-    private var pendingPassword: String? = null
+    private var pendingChallengeId: String? = null
 
     fun sendSignupCode(phone: String, password: String) {
         if (phone.isBlank() || password.isBlank()) {
@@ -34,11 +41,14 @@ class LoginViewModel(
         viewModelScope.launch {
             state = LoginState.Loading
             try {
-                val code = (1000..9999).random().toString()
-                smsRepository.sendOtp(phone, code)
-                pendingPhone = phone
-                pendingPassword = password
-                state = LoginState.OtpSent(phone)
+                val challenge = repository.requestSignupChallenge(phone, password)
+                pendingChallengeId = challenge.challengeId
+                state = LoginState.OtpSent(
+                    phone = phone,
+                    challengeId = challenge.challengeId,
+                    expiresAt = challenge.expiresAt,
+                    remainingAttempts = challenge.remainingAttempts
+                )
             } catch (e: Exception) {
                 state = LoginState.Error(e.toUserMessage("Failed to send OTP"))
             }
@@ -47,28 +57,26 @@ class LoginViewModel(
 
     fun verifySignup(code: String) {
         viewModelScope.launch {
-            val phone = pendingPhone
-            val password = pendingPassword
-
-            if (phone == null || password == null) {
-                state = LoginState.Error("Missing signup data. Please try again.")
+            val challengeId = pendingChallengeId
+            if (challengeId.isNullOrBlank()) {
+                state = LoginState.Error("Missing signup challenge. Please request a new code.")
                 return@launch
             }
-            if (code.length != 4) {
-                state = LoginState.Error("Invalid code")
+            if (code.isBlank()) {
+                state = LoginState.Error("Please enter the OTP code.")
                 return@launch
             }
 
             state = LoginState.Loading
             try {
-                val token = repository.register(phone, password)
+                val token = repository.verifySignupChallenge(challengeId, code.trim())
+                pendingChallengeId = null
                 state = LoginState.LoggedIn(token)
             } catch (e: Exception) {
-                state = LoginState.Error(e.toUserMessage("Registration failed"))
+                state = LoginState.Error(e.toUserMessage("Invalid or expired signup code"))
             }
         }
     }
-
 
     fun consumeLoggedIn() {
         if (state is LoginState.LoggedIn) {
@@ -77,9 +85,7 @@ class LoginViewModel(
     }
 
     fun consumeCodeSent() {
-        if (state is LoginState.OtpSent) {
-            state = LoginState.Idle
-        }
+        // Keep OtpSent state so Verify screen can read challenge metadata.
     }
 
     fun verifySignupCode(code: String) {
@@ -101,5 +107,10 @@ class LoginViewModel(
                 state = LoginState.Error(e.toUserMessage("Login failed"))
             }
         }
+    }
+
+    fun otpExpiresAtEpochSeconds(): Long? {
+        val otpState = state as? LoginState.OtpSent ?: return null
+        return runCatching { Instant.parse(otpState.expiresAt).epochSecond }.getOrNull()
     }
 }

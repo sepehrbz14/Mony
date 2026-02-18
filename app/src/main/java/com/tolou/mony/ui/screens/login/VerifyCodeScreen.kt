@@ -50,12 +50,20 @@ fun VerifyCodeScreen(
     ) {
         Text("Enter signup code", style = MaterialTheme.typography.titleLarge)
 
+        val otpState = state as? LoginState.OtpSent
+        otpState?.let {
+            Spacer(Modifier.height(8.dp))
+            Text("Attempts left: ${it.remainingAttempts}", style = MaterialTheme.typography.bodyMedium)
+            Text("Expires at: ${it.expiresAt}", style = MaterialTheme.typography.bodySmall)
+        }
+
         Spacer(Modifier.height(16.dp))
 
         OutlinedTextField(
             value = code,
             onValueChange = { code = it },
             label = { Text("OTP Code") },
+            supportingText = { Text("Verification is validated by the server challenge") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             shape = inputShape,

@@ -24,14 +24,11 @@ import com.tolou.mony.data.network.AuthApi
 import com.tolou.mony.data.network.ExpenseApi
 import com.tolou.mony.data.network.IncomeApi
 import com.tolou.mony.data.network.RetrofitInstance
-import com.tolou.mony.data.network.SmsApi
-import com.tolou.mony.data.network.SmsRetrofitInstance
 import com.tolou.mony.data.network.UserApi
 import com.tolou.mony.notifications.PendingTransactionStore
 import com.tolou.mony.ui.data.AuthRepository
 import com.tolou.mony.ui.data.ExpenseRepository
 import com.tolou.mony.ui.data.IncomeRepository
-import com.tolou.mony.ui.data.SmsRepository
 import com.tolou.mony.ui.data.UserRepository
 import com.tolou.mony.ui.screens.login.LoginScreen
 import com.tolou.mony.ui.screens.login.LoginViewModel
@@ -68,12 +65,7 @@ fun AppNavGraph(
             sessionStorage
         )
     }
-    val smsRepository = remember {
-        SmsRepository(
-            SmsRetrofitInstance.retrofit.create(SmsApi::class.java)
-        )
-    }
-    val authViewModelFactory = remember { LoginViewModelFactory(authRepository, smsRepository) }
+    val authViewModelFactory = remember { LoginViewModelFactory(authRepository) }
     val expenseRepository = remember {
         ExpenseRepository(
             RetrofitInstance.retrofit.create(ExpenseApi::class.java),
