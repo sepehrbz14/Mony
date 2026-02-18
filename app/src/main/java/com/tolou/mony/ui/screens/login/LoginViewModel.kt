@@ -69,6 +69,23 @@ class LoginViewModel(
         }
     }
 
+
+    fun consumeLoggedIn() {
+        if (state is LoginState.LoggedIn) {
+            state = LoginState.Idle
+        }
+    }
+
+    fun consumeCodeSent() {
+        if (state is LoginState.OtpSent) {
+            state = LoginState.Idle
+        }
+    }
+
+    fun verifySignupCode(code: String) {
+        verifySignup(code)
+    }
+
     fun login(phone: String, password: String) {
         if (phone.isBlank() || password.isBlank()) {
             state = LoginState.Error("Phone and password are required.")

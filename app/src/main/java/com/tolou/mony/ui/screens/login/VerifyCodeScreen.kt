@@ -65,7 +65,7 @@ fun VerifyCodeScreen(
         Spacer(Modifier.height(16.dp))
 
         Button(
-            onClick = { viewModel.verifySignupCode(code) },
+            onClick = { viewModel.verifySignup(code) },
             enabled = state !is LoginState.Loading,
             modifier = Modifier.fillMaxWidth()
         ) {

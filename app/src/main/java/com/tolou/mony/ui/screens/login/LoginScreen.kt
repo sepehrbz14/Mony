@@ -174,7 +174,7 @@ fun SignUpScreen(
     val inputShape = RoundedCornerShape(20.dp)
 
     LaunchedEffect(state) {
-        if (state is LoginState.CodeSent) {
+        if (state is LoginState.OtpSent) {
             onCodeSent()
             viewModel.consumeCodeSent()
         }
