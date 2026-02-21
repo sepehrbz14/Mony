@@ -23,10 +23,10 @@ fun Route.expenseRoutes() {
         post("/expenses") {
             val userId = call.principalUserId()
             val request = call.receive<ExpenseRequest>()
-            if (request.title.isBlank() || request.amount <= 0) {
+            if (request.title.isBlank()) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    mapOf("error" to "Title and amount are required.")
+                    mapOf("error" to "Title is required.")
                 )
                 return@post
             }
