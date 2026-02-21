@@ -1,6 +1,7 @@
 package com.tolou.mony.ui.data
 
 import android.util.Base64
+import com.tolou.mony.BuildConfig
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import javax.crypto.Cipher
@@ -14,11 +15,14 @@ object TransactionCipher {
     private const val IV_LENGTH_BYTES = 12
     private const val PREFIX = "enc::"
 
-    // App-local key material; rotate with migration if changed.
-    private const val SECRET_SEED = "MonySecureTxnV1_2026"
+    private val secretSeed: String by lazy {
+        BuildConfig.TRANSACTION_SECRET_SEED
+            .takeIf { it.isNotBlank() && (BuildConfig.DEBUG || it != "dev-only-change-me") }
+            ?: error("TRANSACTION_SECRET_SEED must be configured for non-debug builds.")
+    }
     private val amountMask: Long by lazy {
         val digest = MessageDigest.getInstance("SHA-256")
-            .digest("$SECRET_SEED::amount".toByteArray(StandardCharsets.UTF_8))
+            .digest("$secretSeed::amount".toByteArray(StandardCharsets.UTF_8))
         java.nio.ByteBuffer.wrap(digest.copyOfRange(0, 8)).long
     }
 
@@ -52,7 +56,7 @@ object TransactionCipher {
     fun decryptAmount(obfuscatedAmount: Long): Long = obfuscatedAmount xor amountMask
 
     private fun secretKey(): SecretKeySpec {
-        val digest = MessageDigest.getInstance("SHA-256").digest(SECRET_SEED.toByteArray(StandardCharsets.UTF_8))
+        val digest = MessageDigest.getInstance("SHA-256").digest(secretSeed.toByteArray(StandardCharsets.UTF_8))
         return SecretKeySpec(digest.copyOf(16), KEY_ALGORITHM)
     }
 

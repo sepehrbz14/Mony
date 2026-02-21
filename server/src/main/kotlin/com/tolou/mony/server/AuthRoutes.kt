@@ -13,6 +13,8 @@ fun Route.authRoutes(authService: AuthService) {
             val request = call.receive<RegisterRequest>()
             val response = authService.register(request)
             call.respond(HttpStatusCode.Created, response)
+        } catch (e: AuthHttpException) {
+            call.respond(e.statusCode, mapOf("error" to e.message))
         } catch (e: IllegalArgumentException) {
             call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
         }
@@ -23,6 +25,8 @@ fun Route.authRoutes(authService: AuthService) {
             val request = call.receive<LoginRequest>()
             val response = authService.login(request)
             call.respond(HttpStatusCode.OK, response)
+        } catch (e: AuthHttpException) {
+            call.respond(e.statusCode, mapOf("error" to e.message))
         } catch (e: IllegalArgumentException) {
             call.respond(HttpStatusCode.Unauthorized, mapOf("error" to e.message))
         }
@@ -33,6 +37,8 @@ fun Route.authRoutes(authService: AuthService) {
             val request = call.receive<SignupChallengeRequest>()
             val response = authService.createSignupChallenge(request)
             call.respond(HttpStatusCode.Created, response)
+        } catch (e: AuthHttpException) {
+            call.respond(e.statusCode, mapOf("error" to e.message))
         } catch (e: IllegalArgumentException) {
             call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
         }
@@ -43,6 +49,8 @@ fun Route.authRoutes(authService: AuthService) {
             val request = call.receive<VerifySignupChallengeRequest>()
             val response = authService.verifySignupChallenge(request)
             call.respond(HttpStatusCode.OK, response)
+        } catch (e: AuthHttpException) {
+            call.respond(e.statusCode, mapOf("error" to e.message))
         } catch (e: IllegalArgumentException) {
             call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
         }

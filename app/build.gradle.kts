@@ -1,3 +1,8 @@
+val transactionSeed: String = providers
+    .gradleProperty("TRANSACTION_SECRET_SEED")
+    .orElse("dev-only-change-me")
+    .get()
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -24,6 +29,11 @@ android {
             "String",
             "API_BASE_URL",
             "\"https://mony-production-facb.up.railway.app/\""
+        )
+        buildConfigField(
+            "String",
+            "TRANSACTION_SECRET_SEED",
+            "\"$transactionSeed\""
         )
     }
 

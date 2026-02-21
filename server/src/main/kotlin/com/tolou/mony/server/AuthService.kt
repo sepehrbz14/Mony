@@ -13,6 +13,7 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.mindrot.jbcrypt.BCrypt
 import java.security.SecureRandom
 import java.time.Instant
@@ -31,22 +32,25 @@ class AuthService(
         }
 
         val passwordHash = BCrypt.hashpw(request.password, BCrypt.gensalt())
-        val userId = newSuspendedTransaction(Dispatchers.IO) {
-            UsersTable.insert {
-                it[phone] = normalizedPhone
-                it[UsersTable.passwordHash] = passwordHash
-                it[createdAt] = Instant.now()
-            } get UsersTable.id
+        val userId = try {
+            newSuspendedTransaction(Dispatchers.IO) {
+                UsersTable.insert {
+                    it[phone] = normalizedPhone
+                    it[UsersTable.passwordHash] = passwordHash
+                    it[createdAt] = Instant.now()
+                } get UsersTable.id
+            }
+        } catch (e: ExposedSQLException) {
+            if (e.isUniqueViolation()) {
+                throw AuthConflictException("Phone already registered.")
+            }
+            throw e
         }
         return AuthResponse(createToken(userId, normalizedPhone))
     }
 
     suspend fun login(request: LoginRequest): AuthResponse {
         val normalizedPhone = request.phone.trim()
-        if (normalizedPhone == TEST_PHONE && request.password == TEST_PASSWORD) {
-            val userId = ensureTestUser()
-            return AuthResponse(createToken(userId, normalizedPhone))
-        }
         val user = newSuspendedTransaction(Dispatchers.IO) {
             UsersTable.selectAll().where { UsersTable.phone eq normalizedPhone }
                 .singleOrNull()
@@ -67,6 +71,7 @@ class AuthService(
         }
 
         purgeExpiredChallenges()
+        ensurePhoneIsNotRegistered(normalizedPhone)
 
         val challengeId = UUID.randomUUID().toString()
         val otp = generateOtpCode()
@@ -160,26 +165,43 @@ class AuthService(
         val phone = challenge[SignupChallengesTable.phone]
         val passwordHash = challenge[SignupChallengesTable.passwordHash]
 
-        val response = newSuspendedTransaction(Dispatchers.IO) {
-            val existingUser = UsersTable.selectAll().where { UsersTable.phone eq phone }.singleOrNull()
-            if (existingUser != null) {
-                throw IllegalArgumentException("Phone already registered.")
+        val response = try {
+            newSuspendedTransaction(Dispatchers.IO) {
+                val existingUser = UsersTable.selectAll().where { UsersTable.phone eq phone }.singleOrNull()
+                if (existingUser != null) {
+                    throw AuthConflictException("Phone already registered.")
+                }
+
+                val userId = UsersTable.insert {
+                    it[UsersTable.phone] = phone
+                    it[UsersTable.passwordHash] = passwordHash
+                    it[UsersTable.createdAt] = now
+                } get UsersTable.id
+
+                SignupChallengesTable.deleteWhere { SignupChallengesTable.id eq challengeId }
+
+                AuthResponse(createToken(userId, phone))
             }
-
-            val userId = UsersTable.insert {
-                it[UsersTable.phone] = phone
-                it[UsersTable.passwordHash] = passwordHash
-                it[UsersTable.createdAt] = now
-            } get UsersTable.id
-
-            SignupChallengesTable.deleteWhere { SignupChallengesTable.id eq challengeId }
-
-            AuthResponse(createToken(userId, phone))
+        } catch (e: ExposedSQLException) {
+            if (e.isUniqueViolation()) {
+                throw AuthConflictException("Phone already registered.")
+            }
+            throw e
         }
 
         return response
     }
 
+
+
+    private suspend fun ensurePhoneIsNotRegistered(phone: String) {
+        val existingUser = newSuspendedTransaction(Dispatchers.IO) {
+            UsersTable.selectAll().where { UsersTable.phone eq phone }.singleOrNull()
+        }
+        if (existingUser != null) {
+            throw AuthConflictException("Phone already registered.")
+        }
+    }
 
     private suspend fun purgeExpiredChallenges() {
         val now = Instant.now()
@@ -200,39 +222,17 @@ class AuthService(
             .sign(algorithm)
     }
 
-    private suspend fun ensureTestUser(): Int {
-        val passwordHash = BCrypt.hashpw(TEST_PASSWORD, BCrypt.gensalt())
-        return newSuspendedTransaction(Dispatchers.IO) {
-            val existingById = UsersTable.selectAll().where { UsersTable.id eq TEST_USER_ID }
-                .singleOrNull()
-            if (existingById != null) {
-                return@newSuspendedTransaction TEST_USER_ID
-            }
-
-            val existingByPhone = UsersTable.selectAll().where { UsersTable.phone eq TEST_PHONE }
-                .singleOrNull()
-            if (existingByPhone != null) {
-                return@newSuspendedTransaction existingByPhone[UsersTable.id]
-            }
-
-            UsersTable.insert {
-                it[id] = TEST_USER_ID
-                it[phone] = TEST_PHONE
-                it[UsersTable.passwordHash] = passwordHash
-                it[createdAt] = Instant.now()
-            } get UsersTable.id
-        }
-    }
-
     private fun generateOtpCode(): String {
         val value = secureRandom.nextInt(900000) + 100000
         return value.toString()
     }
 
+
+    private fun ExposedSQLException.isUniqueViolation(): Boolean {
+        val sqlState = cause?.let { (it as? java.sql.SQLException)?.sqlState }
+        return sqlState?.startsWith("23") == true
+    }
     companion object {
-        private const val TEST_USER_ID = 1001
-        private const val TEST_PHONE = "0912345678"
-        private const val TEST_PASSWORD = "TEST"
         private const val CHALLENGE_TTL_MINUTES = 5L
         private const val MAX_OTP_ATTEMPTS = 5
         private val secureRandom = SecureRandom()

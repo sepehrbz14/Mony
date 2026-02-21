@@ -10,6 +10,7 @@ fun Throwable.toUserMessage(defaultMessage: String = "Something went wrong."): S
         is HttpException -> {
             when (code()) {
                 401 -> "Your username or password is incorrect."
+                409 -> "This phone number is already registered."
                 in 500..599 -> "Server Error"
                 else -> defaultMessage
             }
