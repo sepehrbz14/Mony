@@ -204,33 +204,54 @@ fun AddTransactionScreen(
             )
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = dateInput,
-                onValueChange = { dateInput = it },
-                modifier = Modifier.weight(1f).height(56.dp),
-                singleLine = true,
-                label = { Text("Date (yyyy-MM-dd)") },
-                shape = inputShape,
-                colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                    cursorColor = MaterialTheme.colorScheme.primary
-                )
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = "When",
+                style = MaterialTheme.typography.labelLarge
             )
-            OutlinedTextField(
-                value = timeInput,
-                onValueChange = { timeInput = it },
-                modifier = Modifier.weight(1f).height(56.dp),
-                singleLine = true,
-                label = { Text("Time (HH:mm)") },
-                shape = inputShape,
-                colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                    cursorColor = MaterialTheme.colorScheme.primary
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = dateInput,
+                    onValueChange = { dateInput = it },
+                    modifier = Modifier
+                        .weight(1.25f)
+                        .height(60.dp),
+                    singleLine = true,
+                    label = { Text("Date") },
+                    placeholder = { Text("yyyy-MM-dd") },
+                    textStyle = MaterialTheme.typography.bodyLarge,
+                    shape = inputShape,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    )
                 )
-            )
+                OutlinedTextField(
+                    value = timeInput,
+                    onValueChange = { timeInput = it },
+                    modifier = Modifier
+                        .weight(0.9f)
+                        .height(60.dp),
+                    singleLine = true,
+                    label = { Text("Time") },
+                    placeholder = { Text("HH:mm") },
+                    textStyle = MaterialTheme.typography.bodyLarge,
+                    shape = inputShape,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+            }
         }
 
         Button(
