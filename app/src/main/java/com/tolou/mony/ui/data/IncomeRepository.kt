@@ -24,7 +24,8 @@ class IncomeRepository(
             token = "Bearer $token",
             request = IncomeRequest(
                 title = TransactionCipher.encrypt(title),
-                amount = TransactionCipher.encryptAmount(amount)
+                amount = TransactionCipher.encryptAmount(amount),
+                createdAt = createdAt
             )
         ).copy(title = title, amount = amount)
     }

@@ -24,7 +24,8 @@ class ExpenseRepository(
             token = "Bearer $token",
             request = ExpenseRequest(
                 title = TransactionCipher.encrypt(title),
-                amount = TransactionCipher.encryptAmount(amount)
+                amount = TransactionCipher.encryptAmount(amount),
+                createdAt = createdAt
             )
         ).copy(title = title, amount = amount)
     }

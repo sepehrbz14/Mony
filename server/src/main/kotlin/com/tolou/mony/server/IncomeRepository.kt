@@ -13,14 +13,16 @@ import java.time.Instant
 class IncomeRepository {
     suspend fun createIncome(userId: Int, request: IncomeRequest): IncomeResponse {
         return newSuspendedTransaction(Dispatchers.IO) {
-            val now = Instant.now()
+            val createdAt = runCatching {
+                request.createdAt?.let(Instant::parse)
+            }.getOrNull() ?: Instant.now()
             val id = IncomesTable.insert {
                 it[IncomesTable.userId] = userId
                 it[IncomesTable.title] = request.title
                 it[IncomesTable.amount] = request.amount
-                it[IncomesTable.createdAt] = now
+                it[IncomesTable.createdAt] = createdAt
             } get IncomesTable.id
-            IncomeResponse.fromEntity(id, userId, request.title, request.amount, now)
+            IncomeResponse.fromEntity(id, userId, request.title, request.amount, createdAt)
         }
     }
 

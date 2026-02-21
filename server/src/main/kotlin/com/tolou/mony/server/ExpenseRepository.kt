@@ -14,15 +14,17 @@ import java.time.Instant
 class ExpenseRepository {
     suspend fun createExpense(userId: Int, request: ExpenseRequest): ExpenseResponse {
         return newSuspendedTransaction(Dispatchers.IO) {
-            val now = Instant.now()
+            val createdAt = runCatching {
+                request.createdAt?.let(Instant::parse)
+            }.getOrNull() ?: Instant.now()
             val id = ExpensesTable.insert {
                 it[ExpensesTable.userId] = userId
                 it[title] = request.title
                 it[amount] = request.amount
-                it[createdAt] = now
+                it[createdAt] = createdAt
             } get ExpensesTable.id
 
-            ExpenseResponse.fromEntity(id, userId, request.title, request.amount, now)
+            ExpenseResponse.fromEntity(id, userId, request.title, request.amount, createdAt)
         }
     }
 
