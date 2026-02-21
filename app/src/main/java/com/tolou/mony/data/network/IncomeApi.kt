@@ -8,8 +8,7 @@ import retrofit2.http.POST
 
 data class IncomeRequest(
     val title: String,
-    val amount: Long,
-    val createdAt: String? = null
+    val amount: Long
 )
 
 data class IncomeResponse(

@@ -8,8 +8,7 @@ import retrofit2.http.POST
 
 data class ExpenseRequest(
     val title: String,
-    val amount: Long,
-    val createdAt: String? = null
+    val amount: Long
 )
 
 data class ExpenseResponse(
