@@ -17,7 +17,8 @@ object IncomesTable : Table("incomes") {
 @Serializable
 data class IncomeRequest(
     val title: String,
-    val amount: Long
+    val amount: Long,
+    val createdAt: String? = null
 )
 
 @Serializable

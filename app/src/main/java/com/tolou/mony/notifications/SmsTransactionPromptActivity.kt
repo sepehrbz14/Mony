@@ -42,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.tolou.mony.data.SessionStorage
 import com.tolou.mony.data.network.AuthApi
@@ -214,13 +215,11 @@ private fun SmsTransactionPromptContent(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp)
-                .fillMaxWidth(0.96f)
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
-                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .fillMaxWidth(0.94f)
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(20.dp))
+                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f), RoundedCornerShape(20.dp))
+                .padding(horizontal = 18.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -229,12 +228,14 @@ private fun SmsTransactionPromptContent(
             ) {
                 Text(
                     text = "Detected transaction",
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 TextButton(onClick = onCancel) {
-                    Text("Cancel", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Cancel", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 
@@ -247,12 +248,12 @@ private fun SmsTransactionPromptContent(
             ) {
                 Text(
                     text = "Amount",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
                 Text(
                     text = formatRial(amount),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -285,9 +286,10 @@ private fun SmsTransactionPromptContent(
                     placeholder = { Text("Add a note", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp),
+                        .height(58.dp),
                     singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
+                    textStyle = MaterialTheme.typography.bodyLarge,
+                    shape = RoundedCornerShape(14.dp),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = inputBackground,
                         unfocusedContainerColor = inputBackground,
@@ -305,12 +307,12 @@ private fun SmsTransactionPromptContent(
                 onClick = { onSave(selectedCategory, description.trim()) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp),
+                    .height(56.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(14.dp)
             ) {
                 Text(
                     text = "Save",
@@ -341,10 +343,11 @@ private fun CategoryDropdown(
             onValueChange = {},
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp)
+                .height(58.dp)
                 .menuAnchor(),
             readOnly = true,
-            shape = RoundedCornerShape(12.dp),
+            textStyle = MaterialTheme.typography.bodyLarge,
+            shape = RoundedCornerShape(14.dp),
             trailingIcon = {
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowDown,

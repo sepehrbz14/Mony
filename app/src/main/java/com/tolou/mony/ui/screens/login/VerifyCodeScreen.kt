@@ -24,6 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import java.time.Instant
 
 @Composable
 fun VerifyCodeScreen(
@@ -51,10 +53,32 @@ fun VerifyCodeScreen(
         Text("Enter signup code", style = MaterialTheme.typography.titleLarge)
 
         val otpState = state as? LoginState.OtpSent
+        var secondsRemaining by remember(otpState?.expiresAt) {
+            mutableStateOf(otpState?.let { remainingSeconds(it.expiresAt) } ?: 0L)
+        }
+
+        LaunchedEffect(otpState?.expiresAt) {
+            while (otpState != null && secondsRemaining > 0) {
+                delay(1_000)
+                secondsRemaining = remainingSeconds(otpState.expiresAt)
+            }
+        }
+
         otpState?.let {
             Spacer(Modifier.height(8.dp))
             Text("Attempts left: ${it.remainingAttempts}", style = MaterialTheme.typography.bodyMedium)
-            Text("Expires at: ${it.expiresAt}", style = MaterialTheme.typography.bodySmall)
+            if (secondsRemaining > 0) {
+                Text(
+                    text = "Code expires in ${formatCountdown(secondsRemaining)}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            } else {
+                Text(
+                    text = "Code expired. Request a new verification code.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
         }
 
         Spacer(Modifier.height(16.dp))
@@ -63,7 +87,6 @@ fun VerifyCodeScreen(
             value = code,
             onValueChange = { code = it },
             label = { Text("OTP Code") },
-            supportingText = { Text("Verification is validated by the server challenge") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             shape = inputShape,
@@ -74,7 +97,7 @@ fun VerifyCodeScreen(
 
         Button(
             onClick = { viewModel.verifySignup(code) },
-            enabled = state !is LoginState.Loading,
+            enabled = state !is LoginState.Loading && secondsRemaining > 0,
             modifier = Modifier.fillMaxWidth()
         ) {
             if (state is LoginState.Loading) {
@@ -85,6 +108,17 @@ fun VerifyCodeScreen(
         }
 
         Spacer(Modifier.height(12.dp))
+
+        if (otpState != null && secondsRemaining <= 0) {
+            Button(
+                onClick = onBack,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Request verification code again")
+            }
+
+            Spacer(Modifier.height(12.dp))
+        }
 
         Button(
             onClick = onBack,
@@ -98,4 +132,15 @@ fun VerifyCodeScreen(
             Text(state.message, color = MaterialTheme.colorScheme.error)
         }
     }
+}
+
+private fun remainingSeconds(expiresAt: String): Long {
+    val expiresEpoch = runCatching { Instant.parse(expiresAt).epochSecond }.getOrNull() ?: return 0L
+    return (expiresEpoch - Instant.now().epochSecond).coerceAtLeast(0L)
+}
+
+private fun formatCountdown(totalSeconds: Long): String {
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return "%02d:%02d".format(minutes, seconds)
 }

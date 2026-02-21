@@ -26,7 +26,8 @@ object UsersTable : Table("users") {
 @Serializable
 data class ExpenseRequest(
     val title: String,
-    val amount: Long
+    val amount: Long,
+    val createdAt: String? = null
 )
 
 @Serializable
