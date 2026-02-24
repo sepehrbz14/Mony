@@ -50,9 +50,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
@@ -234,6 +236,7 @@ fun MainScreen(
                     ContentState.Loading -> {
                         LazyColumn(
                             modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(bottom = 18.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(6) {
@@ -264,6 +267,7 @@ fun MainScreen(
                     ContentState.Content -> {
                         LazyColumn(
                             modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(bottom = 92.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(sortedTransactions) { transaction ->
@@ -415,11 +419,12 @@ private fun MonthlyBudgetCard(
     onClick: () -> Unit
 ) {
     val percent = (progress * 100).roundToInt()
+    val elevationDp = if (isSystemInDarkTheme()) 2.dp else 4.dp
     Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = elevationDp)
     ) {
         Row(
             modifier = Modifier
@@ -477,13 +482,14 @@ private fun TransactionRow(
     onClick: () -> Unit
 ) {
     val amountColor = if (isIncome) incomeAmountColor() else AlertRed
+    val elevationDp = if (isSystemInDarkTheme()) 1.5.dp else 3.dp
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = elevationDp)
     ) {
         Row(
             modifier = Modifier
@@ -548,12 +554,13 @@ private fun TransactionSkeletonRow() {
         )
     val baseColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
     val highlightColor = MaterialTheme.colorScheme.onSurface.copy(alpha = shimmerAlpha)
+    val elevationDp = if (isSystemInDarkTheme()) 1.5.dp else 3.dp
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = elevationDp)
     ) {
         Row(
             modifier = Modifier
