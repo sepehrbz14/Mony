@@ -68,6 +68,13 @@ fun VerifyCodeScreen(
         otpState?.let {
             Spacer(Modifier.height(8.dp))
             Text("Attempts left: ${it.remainingAttempts}", style = MaterialTheme.typography.bodyMedium)
+            if (it.remainingAttempts <= 0) {
+                Text(
+                    text = "You have used all attempts. Please wait until the timer ends, then request a new code.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
             if (secondsRemaining > 0) {
                 Text(
                     text = "Code expires in ${formatCountdown(secondsRemaining)}",
@@ -98,7 +105,7 @@ fun VerifyCodeScreen(
 
         Button(
             onClick = { viewModel.verifySignup(code) },
-            enabled = state !is LoginState.Loading && secondsRemaining > 0,
+            enabled = state !is LoginState.Loading && secondsRemaining > 0 && ((otpState?.remainingAttempts ?: 0) > 0),
             modifier = Modifier.fillMaxWidth()
         ) {
             if (state is LoginState.Loading) {
