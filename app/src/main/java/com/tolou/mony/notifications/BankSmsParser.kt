@@ -76,7 +76,8 @@ object BankSmsParser {
         val hasAccountKeyword = normalized.contains("حساب")
         val hasBalanceValue = SmsRegexPatterns.balanceAfterKeywords.containsMatchIn(normalized)
 
-        val isType1 = hasBalanceKeyword && hasSignedNumber && (hasAccountKeyword || hasBalanceValue)
+        val hasType1Amount = hasSignedNumber || SmsRegexPatterns.amountBeforeRial.containsMatchIn(normalized)
+        val isType1 = hasBalanceKeyword && hasType1Amount && (hasAccountKeyword || hasBalanceValue)
         if (isType1) return TemplateType.TYPE_1
 
         val isType2 = normalized.contains("مبلغ") &&
@@ -126,21 +127,46 @@ object BankSmsParser {
     fun parseFallback(text: String): Transaction = parseFallback(text, text)
 
     private fun parseTemplate1(text: String, rawMessage: String): Transaction {
-        val amount = extractSignedNumbers(text).firstOrNull() ?: 0L
+        val normalized = preprocess(text)
+        val amount = SmsRegexPatterns.amountBeforeParid
+            .find(normalized)
+            ?.groupValues
+            ?.get(1)
+            ?.let(::parseLong)
+            ?: SmsRegexPatterns.amountBeforeNeshast
+                .find(normalized)
+                ?.groupValues
+                ?.get(1)
+                ?.let(::parseLong)
+            ?: extractSignedNumbers(text).firstOrNull()
+            ?: 0L
+
+        val explicitType = when {
+            normalized.contains("از حساب شما پرید") -> ParsedTransactionType.EXPENSE
+            normalized.contains("به حساب شما نشست") -> ParsedTransactionType.INCOME
+            else -> ParsedTransactionType.UNKNOWN
+        }
+
+        val parsedType = if (explicitType == ParsedTransactionType.UNKNOWN) {
+            amount.toTransactionType()
+        } else {
+            explicitType
+        }
+
         val balance = SmsRegexPatterns.balanceAfterKeywords
-            .find(preprocess(text))
+            .find(normalized)
             ?.groupValues
             ?.get(1)
             ?.let(::parseLong)
 
         return Transaction(
             amount = amount,
-            type = amount.toTransactionType(),
+            type = parsedType,
             balance = balance,
             accountNumber = extractAccountNumber(text),
-            dateTime = extractLastDateTimeLine(preprocess(text)) ?: extractDate(text),
+            dateTime = extractLastDateTimeLine(normalized) ?: extractDate(text),
             rawMessage = rawMessage,
-            normalizedMessage = preprocess(text),
+            normalizedMessage = normalized,
             templateType = TemplateType.TYPE_1
         )
     }

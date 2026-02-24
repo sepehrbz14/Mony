@@ -8,6 +8,8 @@ object SmsRegexPatterns {
     val transferAccount = Regex("(?:انتقال\\s*به|برداشت\\s*از|واریز\\s*به)\\s*([\\d*]+)")
     val balanceAfterKeywords = Regex("(?:مانده|موجودی)\\s*[:：]?\\s*([+-]?\\s*\\d[\\d,٬٫]*)")
     val amountBeforeRial = Regex("([+-]?\\s*\\d[\\d,٬٫]*)\\s*ریال")
+    val amountBeforeParid = Regex("(\\d[\\d,٬٫]*)\\s*ریال\\s*از\\s*حساب\\s*شما\\s*پرید")
+    val amountBeforeNeshast = Regex("(\\d[\\d,٬٫]*)\\s*ریال\\s*به\\s*حساب\\s*شما\\s*نشست")
 
     val dateTime = Regex("(\\d{4}[/-]\\d{1,2}[/-]\\d{1,2}\\s+\\d{1,2}:\\d{1,2}(?::\\d{1,2})?)")
     val dateOnly = Regex("(\\d{4}[/-]\\d{1,2}[/-]\\d{1,2})")
