@@ -57,6 +57,21 @@ class BankSmsParserTest {
         assertEquals(TemplateType.TYPE_2, transaction.templateType)
     }
 
+
+    @Test
+    fun `detect template 3 for parid and neshast phrases`() {
+        val sms = """
+            بانک نمونه
+            640000 ریال از حساب شما پرید
+            موجودی 9100000 ریال
+            2024/12/25 14:33
+        """.trimIndent()
+
+        val type = BankSmsParser.detectTemplate(sms)
+
+        assertEquals(TemplateType.TYPE_3, type)
+    }
+
     @Test
     fun `parse template 3 returns amount balance and income type`() {
         val sms = """
