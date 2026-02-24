@@ -81,7 +81,9 @@ object BankSmsParser {
             normalized.contains("از حساب شما پرید") ||
             normalized.contains("به حساب شما نشست")
 
-        val hasType1Amount = hasSignedNumber || SmsRegexPatterns.amountBeforeRial.containsMatchIn(normalized)
+        val hasType1Amount = hasSignedNumber ||
+            SmsRegexPatterns.amountBeforeRial.containsMatchIn(normalized) ||
+            SmsRegexPatterns.amountAfterMablagh.containsMatchIn(normalized)
         val isType1 = hasBalanceKeyword && hasType1Amount && (hasAccountKeyword || hasBalanceValue) && !hasType3Phrase
         if (isType1) return TemplateType.TYPE_1
 
@@ -133,7 +135,12 @@ object BankSmsParser {
 
     private fun parseTemplate1(text: String, rawMessage: String): Transaction {
         val normalized = preprocess(text)
-        val amount = extractSignedNumbers(text).firstOrNull()
+        val amount = SmsRegexPatterns.amountAfterMablagh
+            .find(normalized)
+            ?.groupValues
+            ?.get(1)
+            ?.let(::parseLong)
+            ?: extractSignedNumbers(text).firstOrNull()
             ?: 0L
 
         val parsedType = amount.toTransactionType()
@@ -266,7 +273,19 @@ object BankSmsParser {
             .replace("٫", "")
             .replace(" ", "")
 
-        return normalized.toLongOrNull()
+        if (normalized.isBlank()) return null
+
+        val isNegative = normalized.startsWith("-") || normalized.endsWith("-")
+        val isPositive = normalized.startsWith("+") || normalized.endsWith("+")
+
+        val numeric = normalized.trim('+', '-')
+        val value = numeric.toLongOrNull() ?: return null
+
+        return when {
+            isNegative -> -value
+            isPositive -> value
+            else -> value
+        }
     }
 
     private fun normalizeCurrencyWords(text: String): String {
