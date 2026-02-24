@@ -455,11 +455,11 @@ private fun MonthlyBudgetCard(
                 )
                 Text(
                     text = "${formatRial(spent)} / ${formatRial(budget)}",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimary,
                     maxLines = 1,
                     softWrap = false,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Clip
                 )
             }
         }

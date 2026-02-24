@@ -32,6 +32,8 @@ class LoginViewModel(
         private set
 
     private var pendingChallengeId: String? = null
+    private var pendingSignupPhone: String? = null
+    private var pendingSignupPassword: String? = null
     var otpVerifyErrorMessage: String? by mutableStateOf(null)
         private set
 
@@ -46,6 +48,8 @@ class LoginViewModel(
             try {
                 val challenge = repository.requestSignupChallenge(phone, password)
                 pendingChallengeId = challenge.challengeId
+                pendingSignupPhone = phone
+                pendingSignupPassword = password
                 state = LoginState.OtpSent(
                     phone = phone,
                     challengeId = challenge.challengeId,
@@ -80,9 +84,21 @@ class LoginViewModel(
                 state = LoginState.LoggedIn(token)
             } catch (e: Exception) {
                 otpVerifyErrorMessage = e.toUserMessage("Invalid or expired signup code")
-                state = otpStateSnapshot ?: LoginState.Error(otpVerifyErrorMessage ?: "Invalid or expired signup code")
+                state = otpStateSnapshot
+                    ?.copy(remainingAttempts = (otpStateSnapshot.remainingAttempts - 1).coerceAtLeast(0))
+                    ?: LoginState.Error(otpVerifyErrorMessage ?: "Invalid or expired signup code")
             }
         }
+    }
+
+    fun resendSignupCode() {
+        val phone = pendingSignupPhone
+        val password = pendingSignupPassword
+        if (phone.isNullOrBlank() || password.isNullOrBlank()) {
+            state = LoginState.Error("Missing signup data. Please sign up again.")
+            return
+        }
+        sendSignupCode(phone, password)
     }
 
     fun consumeLoggedIn() {
