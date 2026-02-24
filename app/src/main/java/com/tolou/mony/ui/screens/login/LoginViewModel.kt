@@ -6,15 +6,21 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tolou.mony.ui.data.AuthRepository
+import com.tolou.mony.ui.utils.toUserMessage
 import kotlinx.coroutines.launch
-
+import java.time.Instant
 
 sealed class LoginState {
-    object EnterPhone : LoginState()
-    object SendingCode : LoginState()
-    data class CodeSent(val phone: String) : LoginState()
-    object Verifying : LoginState()
-    object LoggedIn : LoginState()
+    object Idle : LoginState()
+    object Loading : LoginState()
+    data class OtpSent(
+        val phone: String,
+        val challengeId: String,
+        val expiresAt: String,
+        val remainingAttempts: Int
+    ) : LoginState()
+
+    data class LoggedIn(val token: String) : LoginState()
     data class Error(val message: String) : LoginState()
 }
 
@@ -22,50 +28,112 @@ class LoginViewModel(
     private val repository: AuthRepository
 ) : ViewModel() {
 
-    var state by mutableStateOf<LoginState>(LoginState.EnterPhone)
+    var state: LoginState by mutableStateOf(LoginState.Idle)
         private set
 
-    private var sentCode: String? = null
+    private var pendingChallengeId: String? = null
+    private var pendingSignupPhone: String? = null
+    private var pendingSignupPassword: String? = null
+    var otpVerifyErrorMessage: String? by mutableStateOf(null)
+        private set
 
-    fun sendCode(phone: String) {
+    fun sendSignupCode(phone: String, password: String) {
+        if (phone.isBlank() || password.isBlank()) {
+            state = LoginState.Error("Phone and password are required.")
+            return
+        }
         viewModelScope.launch {
-            state = LoginState.SendingCode
+            state = LoginState.Loading
+            otpVerifyErrorMessage = null
             try {
-                val code = generateOtpCode()
-                repository.sendOtp(phone, code)
-                sentCode = code
-                state = LoginState.CodeSent(phone)
+                val challenge = repository.requestSignupChallenge(phone, password)
+                pendingChallengeId = challenge.challengeId
+                pendingSignupPhone = phone
+                pendingSignupPassword = password
+                state = LoginState.OtpSent(
+                    phone = phone,
+                    challengeId = challenge.challengeId,
+                    expiresAt = challenge.expiresAt,
+                    remainingAttempts = challenge.remainingAttempts
+                )
             } catch (e: Exception) {
-                state = LoginState.Error(e.localizedMessage ?: "Failed to send code")
+                state = LoginState.Error(e.toUserMessage("Failed to send OTP"))
             }
         }
     }
 
-    fun consumeCodeSent() {
-        if (state is LoginState.CodeSent) {
-            state = LoginState.EnterPhone
-        }
-    }
-
-    fun verifyCode(code: String) {
+    fun verifySignup(code: String) {
         viewModelScope.launch {
-            state = LoginState.Verifying
-            val expected = sentCode
-            if (expected != null && expected == code) {
-                state = LoginState.LoggedIn
-            } else {
-                state = LoginState.Error("Invalid code")
+            val otpStateSnapshot = state as? LoginState.OtpSent
+            val challengeId = pendingChallengeId
+            if (challengeId.isNullOrBlank()) {
+                state = LoginState.Error("Missing signup challenge. Please request a new code.")
+                return@launch
+            }
+            if (code.isBlank()) {
+                otpVerifyErrorMessage = "Please enter the OTP code."
+                return@launch
+            }
+
+            state = LoginState.Loading
+            otpVerifyErrorMessage = null
+            try {
+                val token = repository.verifySignupChallenge(challengeId, code.trim())
+                pendingChallengeId = null
+                otpVerifyErrorMessage = null
+                state = LoginState.LoggedIn(token)
+            } catch (e: Exception) {
+                otpVerifyErrorMessage = e.toUserMessage("Invalid or expired signup code")
+                state = otpStateSnapshot
+                    ?.copy(remainingAttempts = (otpStateSnapshot.remainingAttempts - 1).coerceAtLeast(0))
+                    ?: LoginState.Error(otpVerifyErrorMessage ?: "Invalid or expired signup code")
             }
         }
+    }
+
+    fun resendSignupCode() {
+        val phone = pendingSignupPhone
+        val password = pendingSignupPassword
+        if (phone.isNullOrBlank() || password.isNullOrBlank()) {
+            state = LoginState.Error("Missing signup data. Please sign up again.")
+            return
+        }
+        sendSignupCode(phone, password)
     }
 
     fun consumeLoggedIn() {
         if (state is LoginState.LoggedIn) {
-            state = LoginState.EnterPhone
+            state = LoginState.Idle
         }
     }
 
-    private fun generateOtpCode(): String {
-        return (10000..99999).random().toString()
+    fun consumeCodeSent() {
+        // Keep OtpSent state so Verify screen can read challenge metadata.
+    }
+
+    fun verifySignupCode(code: String) {
+        verifySignup(code)
+    }
+
+    fun login(phone: String, password: String) {
+        if (phone.isBlank() || password.isBlank()) {
+            state = LoginState.Error("Phone and password are required.")
+            return
+        }
+
+        viewModelScope.launch {
+            state = LoginState.Loading
+            try {
+                val token = repository.login(phone, password)
+                state = LoginState.LoggedIn(token)
+            } catch (e: Exception) {
+                state = LoginState.Error(e.toUserMessage("Login failed"))
+            }
+        }
+    }
+
+    fun otpExpiresAtEpochSeconds(): Long? {
+        val otpState = state as? LoginState.OtpSent ?: return null
+        return runCatching { Instant.parse(otpState.expiresAt).epochSecond }.getOrNull()
     }
 }

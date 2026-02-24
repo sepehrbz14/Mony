@@ -1,7 +1,7 @@
 [versions]
 agp = "8.13.2"
 converterGson = "3.0.0"
-kotlin = "2.0.21"
+kotlin = "2.2.20"
 ktor = "2.3.12"
 serialization = "1.7.3"
 exposed = "0.57.0"
@@ -9,6 +9,8 @@ hikari = "5.1.0"
 flyway = "10.21.0"
 postgres = "42.7.4"
 logback = "1.5.12"
+jwt = "4.5.0"
+bcrypt = "0.4"
 coreKtx = "1.17.0"
 junit = "4.13.2"
 junitVersion = "1.1.5"
@@ -16,7 +18,7 @@ espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.10.0"
 lifecycleViewModelCompose = "2.10.0"
 activityCompose = "1.12.2"
-ksp = "2.0.21-1.0.25"
+ksp = "2.2.20-2.0.3"
 loggingInterceptor = "4.12.0"
 navigationCompose = "2.9.7"
 retrofit = "3.0.0"
@@ -53,19 +55,24 @@ ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty", version.ref
 ktor-server-core = { group = "io.ktor", name = "ktor-server-core", version.ref = "ktor" }
 ktor-server-content-negotiation = { group = "io.ktor", name = "ktor-server-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-server-auth = { group = "io.ktor", name = "ktor-server-auth", version.ref = "ktor" }
+ktor-server-auth-jwt = { group = "io.ktor", name = "ktor-server-auth-jwt", version.ref = "ktor" }
 exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
 exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
 exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
-exposed-javatime = { group = "org.jetbrains.exposed", name = "exposed-javatime", version.ref = "exposed" }
+exposed-java-time = { group = "org.jetbrains.exposed", name = "exposed-java-time", version.ref = "exposed" }
 hikari = { group = "com.zaxxer", name = "HikariCP", version.ref = "hikari" }
 flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flyway" }
+flyway-database-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flyway" }
 postgres = { group = "org.postgresql", name = "postgresql", version.ref = "postgres" }
 logback-classic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
+jwt-library = { group = "com.auth0", name = "java-jwt", version.ref = "jwt" }
+bcrypt = { group = "org.mindrot", name = "jbcrypt", version.ref = "bcrypt" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-ksp = { id = "com.google.devtools.ksp", version = "2.0.21-1.0.25" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

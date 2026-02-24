@@ -21,17 +21,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import java.time.Instant
 
 @Composable
 fun VerifyCodeScreen(
-    phone: String,
     viewModel: LoginViewModel,
-    onVerified: () -> Unit
+    onVerified: () -> Unit,
+    onBack: () -> Unit
 ) {
     var code by remember { mutableStateOf("") }
     val state = viewModel.state
+    val otpErrorMessage = viewModel.otpVerifyErrorMessage
+    val inputShape = RoundedCornerShape(20.dp)
 
     LaunchedEffect(state) {
         if (state is LoginState.LoggedIn) {
@@ -46,8 +51,43 @@ fun VerifyCodeScreen(
             .padding(24.dp),
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Enter verification code", style = MaterialTheme.typography.titleLarge)
-        Text("Sent to $phone", style = MaterialTheme.typography.bodyMedium)
+        Text("Enter signup code", style = MaterialTheme.typography.titleLarge)
+
+        val otpState = state as? LoginState.OtpSent
+        var secondsRemaining by remember(otpState?.expiresAt) {
+            mutableStateOf(otpState?.let { remainingSeconds(it.expiresAt) } ?: 0L)
+        }
+
+        LaunchedEffect(otpState?.expiresAt) {
+            while (otpState != null && secondsRemaining > 0) {
+                delay(1_000)
+                secondsRemaining = remainingSeconds(otpState.expiresAt)
+            }
+        }
+
+        otpState?.let {
+            Spacer(Modifier.height(8.dp))
+            Text("Attempts left: ${it.remainingAttempts}", style = MaterialTheme.typography.bodyMedium)
+            if (it.remainingAttempts <= 0) {
+                Text(
+                    text = "You have used all attempts. Please wait until the timer ends, then request a new code.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            if (secondsRemaining > 0) {
+                Text(
+                    text = "Code expires in ${formatCountdown(secondsRemaining)}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            } else {
+                Text(
+                    text = "Code expired. Request a new verification code.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
 
         Spacer(Modifier.height(16.dp))
 
@@ -57,26 +97,61 @@ fun VerifyCodeScreen(
             label = { Text("OTP Code") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
+            shape = inputShape,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword)
         )
 
         Spacer(Modifier.height(16.dp))
 
         Button(
-            onClick = { viewModel.verifyCode(code) },
-            enabled = state !is LoginState.Verifying,
+            onClick = { viewModel.verifySignup(code) },
+            enabled = state !is LoginState.Loading && secondsRemaining > 0 && ((otpState?.remainingAttempts ?: 0) > 0),
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (state is LoginState.Verifying) {
+            if (state is LoginState.Loading) {
                 CircularProgressIndicator(modifier = Modifier.size(20.dp))
             } else {
-                Text("Verify")
+                Text("Verify & Create Account")
             }
         }
 
-        if (state is LoginState.Error) {
+        Spacer(Modifier.height(12.dp))
+
+        if (otpState != null && secondsRemaining <= 0) {
+            Button(
+                onClick = { viewModel.resendSignupCode() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Request verification code again")
+            }
+
+            Spacer(Modifier.height(12.dp))
+        }
+
+        Button(
+            onClick = onBack,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Back")
+        }
+
+        if (otpErrorMessage != null) {
+            Spacer(Modifier.height(12.dp))
+            Text(otpErrorMessage, color = MaterialTheme.colorScheme.error)
+        } else if (state is LoginState.Error) {
             Spacer(Modifier.height(12.dp))
             Text(state.message, color = MaterialTheme.colorScheme.error)
         }
     }
+}
+
+private fun remainingSeconds(expiresAt: String): Long {
+    val expiresEpoch = runCatching { Instant.parse(expiresAt).epochSecond }.getOrNull() ?: return 0L
+    return (expiresEpoch - Instant.now().epochSecond).coerceAtLeast(0L)
+}
+
+private fun formatCountdown(totalSeconds: Long): String {
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return "%02d:%02d".format(minutes, seconds)
 }
