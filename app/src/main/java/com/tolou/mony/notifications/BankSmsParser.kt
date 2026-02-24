@@ -39,12 +39,13 @@ object BankSmsParser {
         val templateType = detectTemplate(normalized)
 
         return runCatching {
-            when (templateType) {
+            val parsed = when (templateType) {
                 TemplateType.TYPE_1 -> parseTemplate1(normalized, rawMessage)
                 TemplateType.TYPE_2 -> parseTemplate2(normalized, rawMessage)
                 TemplateType.TYPE_3 -> parseTemplate3(normalized, rawMessage)
                 TemplateType.FALLBACK -> parseFallback(normalized, rawMessage)
             }
+            parsed.copy(amount = parsed.amount.rialToToman())
         }.getOrElse {
             Log.w(TAG, "Failed to parse sms. raw=$rawMessage", it)
             Transaction(
@@ -261,6 +262,8 @@ object BankSmsParser {
             else -> ParsedTransactionType.UNKNOWN
         }
     }
+
+    private fun Long.rialToToman(): Long = this / 10L
 
     private fun parseLong(rawNumber: String): Long? {
         val normalized = convertPersianDigitsToEnglish(rawNumber)
