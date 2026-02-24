@@ -35,6 +35,7 @@ fun VerifyCodeScreen(
 ) {
     var code by remember { mutableStateOf("") }
     val state = viewModel.state
+    val otpErrorMessage = viewModel.otpVerifyErrorMessage
     val inputShape = RoundedCornerShape(20.dp)
 
     LaunchedEffect(state) {
@@ -127,7 +128,10 @@ fun VerifyCodeScreen(
             Text("Back")
         }
 
-        if (state is LoginState.Error) {
+        if (otpErrorMessage != null) {
+            Spacer(Modifier.height(12.dp))
+            Text(otpErrorMessage, color = MaterialTheme.colorScheme.error)
+        } else if (state is LoginState.Error) {
             Spacer(Modifier.height(12.dp))
             Text(state.message, color = MaterialTheme.colorScheme.error)
         }
