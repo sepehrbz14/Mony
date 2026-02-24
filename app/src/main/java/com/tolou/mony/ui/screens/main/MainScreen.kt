@@ -48,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -55,6 +56,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
@@ -414,12 +416,20 @@ private fun MonthlyBudgetCard(
     onClick: () -> Unit
 ) {
     val percent = (progress * 100).roundToInt()
-    val elevationDp = if (isSystemInDarkTheme()) 2.dp else 4.dp
+    val isDark = isSystemInDarkTheme()
+    val shadowElevation = if (isDark) 7.dp else 8.dp
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = shadowElevation,
+                shape = RoundedCornerShape(12.dp),
+                ambientColor = if (isDark) Color.White.copy(alpha = 0.55f) else Color.Black.copy(alpha = 0.22f),
+                spotColor = if (isDark) Color.White.copy(alpha = 0.7f) else Color.Black.copy(alpha = 0.28f)
+            ),
         onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-        elevation = CardDefaults.cardElevation(defaultElevation = elevationDp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
@@ -477,14 +487,20 @@ private fun TransactionRow(
     onClick: () -> Unit
 ) {
     val amountColor = if (isIncome) incomeAmountColor() else AlertRed
-    val elevationDp = if (isSystemInDarkTheme()) 1.5.dp else 3.dp
+    val isDark = isSystemInDarkTheme()
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .shadow(
+                elevation = if (isDark) 3.5.dp else 4.dp,
+                shape = RoundedCornerShape(16.dp),
+                ambientColor = if (isDark) Color.White.copy(alpha = 0.35f) else Color.Black.copy(alpha = 0.16f),
+                spotColor = if (isDark) Color.White.copy(alpha = 0.45f) else Color.Black.copy(alpha = 0.2f)
+            )
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = elevationDp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
@@ -549,13 +565,20 @@ private fun TransactionSkeletonRow() {
         )
     val baseColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
     val highlightColor = MaterialTheme.colorScheme.onSurface.copy(alpha = shimmerAlpha)
-    val elevationDp = if (isSystemInDarkTheme()) 1.5.dp else 3.dp
+    val isDark = isSystemInDarkTheme()
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = if (isDark) 3.5.dp else 4.dp,
+                shape = RoundedCornerShape(16.dp),
+                ambientColor = if (isDark) Color.White.copy(alpha = 0.35f) else Color.Black.copy(alpha = 0.16f),
+                spotColor = if (isDark) Color.White.copy(alpha = 0.45f) else Color.Black.copy(alpha = 0.2f)
+            ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = elevationDp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
