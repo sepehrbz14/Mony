@@ -329,7 +329,7 @@ private fun SmsTransactionPromptContent(
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Text(
-                        text = "Don't save",
+                        text = "Cancel",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Medium
                     )
