@@ -417,24 +417,20 @@ private fun MonthlyBudgetCard(
 ) {
     val percent = (progress * 100).roundToInt()
     val isDark = isSystemInDarkTheme()
+    val ambientShadow = if (isDark) Color.White.copy(alpha = 0.55f) else Color.Black.copy(alpha = 0.28f)
+    val spotShadow = if (isDark) Color.White.copy(alpha = 0.75f) else Color.Black.copy(alpha = 0.38f)
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .let {
-                if (isDark) {
-                    it.shadow(
-                        elevation = 7.dp,
-                        shape = RoundedCornerShape(12.dp),
-                        ambientColor = Color.White.copy(alpha = 0.55f),
-                        spotColor = Color.White.copy(alpha = 0.7f)
-                    )
-                } else {
-                    it
-                }
-            },
+            .shadow(
+                elevation = 10.dp,
+                shape = RoundedCornerShape(12.dp),
+                ambientColor = ambientShadow,
+                spotColor = spotShadow
+            ),
         onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) 0.dp else 8.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
@@ -493,25 +489,21 @@ private fun TransactionRow(
 ) {
     val amountColor = if (isIncome) incomeAmountColor() else AlertRed
     val isDark = isSystemInDarkTheme()
+    val ambientShadow = if (isDark) Color.White.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.2f)
+    val spotShadow = if (isDark) Color.White.copy(alpha = 0.55f) else Color.Black.copy(alpha = 0.3f)
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .let {
-                if (isDark) {
-                    it.shadow(
-                        elevation = 3.5.dp,
-                        shape = RoundedCornerShape(16.dp),
-                        ambientColor = Color.White.copy(alpha = 0.35f),
-                        spotColor = Color.White.copy(alpha = 0.45f)
-                    )
-                } else {
-                    it
-                }
-            }
+            .shadow(
+                elevation = 6.dp,
+                shape = RoundedCornerShape(16.dp),
+                ambientColor = ambientShadow,
+                spotColor = spotShadow
+            )
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) 0.dp else 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
@@ -577,25 +569,21 @@ private fun TransactionSkeletonRow() {
     val baseColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
     val highlightColor = MaterialTheme.colorScheme.onSurface.copy(alpha = shimmerAlpha)
     val isDark = isSystemInDarkTheme()
+    val ambientShadow = if (isDark) Color.White.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.2f)
+    val spotShadow = if (isDark) Color.White.copy(alpha = 0.55f) else Color.Black.copy(alpha = 0.3f)
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .let {
-                if (isDark) {
-                    it.shadow(
-                        elevation = 3.5.dp,
-                        shape = RoundedCornerShape(16.dp),
-                        ambientColor = Color.White.copy(alpha = 0.35f),
-                        spotColor = Color.White.copy(alpha = 0.45f)
-                    )
-                } else {
-                    it
-                }
-            },
+            .shadow(
+                elevation = 6.dp,
+                shape = RoundedCornerShape(16.dp),
+                ambientColor = ambientShadow,
+                spotColor = spotShadow
+            ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) 0.dp else 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
