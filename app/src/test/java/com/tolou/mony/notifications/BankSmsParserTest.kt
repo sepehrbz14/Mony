@@ -57,6 +57,55 @@ class BankSmsParserTest {
         assertEquals(TemplateType.TYPE_2, transaction.templateType)
     }
 
+
+
+    @Test
+    fun `detects type 1 when mablagh has trailing plus sign`() {
+        val sms = """
+            80001914726000
+            مبلغ:500,000+
+            مانده:27,328,965
+            12/06
+            00:59
+        """.trimIndent()
+
+        val type = BankSmsParser.detectTemplate(sms)
+
+        assertEquals(TemplateType.TYPE_1, type)
+    }
+
+    @Test
+    fun `parse type 1 with mablagh trailing plus sign`() {
+        val sms = """
+            80001914726000
+            مبلغ:500,000+
+            مانده:27,328,965
+            12/06
+            00:59
+        """.trimIndent()
+
+        val transaction = BankSmsParser.parse(sms)
+
+        assertEquals(TemplateType.TYPE_1, transaction.templateType)
+        assertEquals(50000L, transaction.amount)
+        assertEquals(2732896L, transaction.balance)
+        assertEquals(ParsedTransactionType.INCOME, transaction.type)
+    }
+
+    @Test
+    fun `detect template 3 for parid and neshast phrases`() {
+        val sms = """
+            بانک نمونه
+            640000 ریال از حساب شما پرید
+            موجودی 9100000 ریال
+            2024/12/25 14:33
+        """.trimIndent()
+
+        val type = BankSmsParser.detectTemplate(sms)
+
+        assertEquals(TemplateType.TYPE_3, type)
+    }
+
     @Test
     fun `parse template 3 returns amount balance and income type`() {
         val sms = """

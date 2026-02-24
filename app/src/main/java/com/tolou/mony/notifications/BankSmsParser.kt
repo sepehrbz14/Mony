@@ -76,9 +76,15 @@ object BankSmsParser {
         val hasBalanceKeyword = normalized.contains("مانده") || normalized.contains("موجودی")
         val hasAccountKeyword = normalized.contains("حساب")
         val hasBalanceValue = SmsRegexPatterns.balanceAfterKeywords.containsMatchIn(normalized)
+        val hasType3Phrase = normalized.contains("برداشت پول") ||
+            normalized.contains("واریز پول") ||
+            normalized.contains("از حساب شما پرید") ||
+            normalized.contains("به حساب شما نشست")
 
-        val hasType1Amount = hasSignedNumber || SmsRegexPatterns.amountBeforeRial.containsMatchIn(normalized)
-        val isType1 = hasBalanceKeyword && hasType1Amount && (hasAccountKeyword || hasBalanceValue)
+        val hasType1Amount = hasSignedNumber ||
+            SmsRegexPatterns.amountBeforeRial.containsMatchIn(normalized) ||
+            SmsRegexPatterns.amountAfterMablagh.containsMatchIn(normalized)
+        val isType1 = hasBalanceKeyword && hasType1Amount && (hasAccountKeyword || hasBalanceValue) && !hasType3Phrase
         if (isType1) return TemplateType.TYPE_1
 
         val isType2 = normalized.contains("مبلغ") &&
@@ -87,7 +93,7 @@ object BankSmsParser {
 
         val isType3 = normalized.contains("ریال") &&
             normalized.contains("موجودی") &&
-            (normalized.contains("برداشت پول") || normalized.contains("واریز پول"))
+            hasType3Phrase
         if (isType3) return TemplateType.TYPE_3
 
         return TemplateType.FALLBACK
@@ -129,30 +135,15 @@ object BankSmsParser {
 
     private fun parseTemplate1(text: String, rawMessage: String): Transaction {
         val normalized = preprocess(text)
-        val amount = SmsRegexPatterns.amountBeforeParid
+        val amount = SmsRegexPatterns.amountAfterMablagh
             .find(normalized)
             ?.groupValues
             ?.get(1)
             ?.let(::parseLong)
-            ?: SmsRegexPatterns.amountBeforeNeshast
-                .find(normalized)
-                ?.groupValues
-                ?.get(1)
-                ?.let(::parseLong)
             ?: extractSignedNumbers(text).firstOrNull()
             ?: 0L
 
-        val explicitType = when {
-            normalized.contains("از حساب شما پرید") -> ParsedTransactionType.EXPENSE
-            normalized.contains("به حساب شما نشست") -> ParsedTransactionType.INCOME
-            else -> ParsedTransactionType.UNKNOWN
-        }
-
-        val parsedType = if (explicitType == ParsedTransactionType.UNKNOWN) {
-            amount.toTransactionType()
-        } else {
-            explicitType
-        }
+        val parsedType = amount.toTransactionType()
 
         val balance = SmsRegexPatterns.balanceAfterKeywords
             .find(normalized)
@@ -204,11 +195,21 @@ object BankSmsParser {
     private fun parseTemplate3(text: String, rawMessage: String): Transaction {
         val normalized = preprocess(text)
 
-        val amount = SmsRegexPatterns.amountBeforeRial
+        val amount = SmsRegexPatterns.amountBeforeParid
             .find(normalized)
             ?.groupValues
             ?.get(1)
             ?.let(::parseLong)
+            ?: SmsRegexPatterns.amountBeforeNeshast
+                .find(normalized)
+                ?.groupValues
+                ?.get(1)
+                ?.let(::parseLong)
+            ?: SmsRegexPatterns.amountBeforeRial
+                .find(normalized)
+                ?.groupValues
+                ?.get(1)
+                ?.let(::parseLong)
             ?: 0L
 
         val balance = SmsRegexPatterns.balanceAfterKeywords
@@ -272,7 +273,19 @@ object BankSmsParser {
             .replace("٫", "")
             .replace(" ", "")
 
-        return normalized.toLongOrNull()
+        if (normalized.isBlank()) return null
+
+        val isNegative = normalized.startsWith("-") || normalized.endsWith("-")
+        val isPositive = normalized.startsWith("+") || normalized.endsWith("+")
+
+        val numeric = normalized.trim('+', '-')
+        val value = numeric.toLongOrNull() ?: return null
+
+        return when {
+            isNegative -> -value
+            isPositive -> value
+            else -> value
+        }
     }
 
     private fun normalizeCurrencyWords(text: String): String {
