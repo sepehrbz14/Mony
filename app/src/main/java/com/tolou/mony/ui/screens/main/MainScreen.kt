@@ -178,11 +178,6 @@ fun MainScreen(
                         text = greeting,
                         style = MaterialTheme.typography.titleMedium
                     )
-                    Text(
-                        text = "March, 2026",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = NeutralGray
-                    )
                 }
                 Row {
                     IconButton(onClick = onPendingClick) {
@@ -438,7 +433,7 @@ private fun MonthlyBudgetCard(
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(
-                    progress = progress,
+                    progress = { progress },
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.onPrimary,
                     trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),

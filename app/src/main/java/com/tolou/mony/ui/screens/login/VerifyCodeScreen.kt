@@ -120,7 +120,6 @@ fun VerifyCodeScreen(
         if (otpState != null && secondsRemaining <= 0) {
             Button(
                 onClick = { viewModel.resendSignupCode() },
-                enabled = state !is LoginState.Loading,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Request verification code again")

@@ -27,6 +27,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -377,7 +378,7 @@ private fun CategoryDropdown(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(58.dp)
-                .menuAnchor(),
+                .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true),
             readOnly = true,
             textStyle = MaterialTheme.typography.bodyLarge,
             shape = RoundedCornerShape(14.dp),
