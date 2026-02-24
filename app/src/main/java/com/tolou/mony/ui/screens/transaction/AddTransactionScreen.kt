@@ -217,10 +217,10 @@ fun AddTransactionScreen(
                     value = dateInput,
                     onValueChange = { dateInput = it },
                     modifier = Modifier
-                        .weight(1.25f)
-                        .height(60.dp),
+                        .weight(1.45f)
+                        .height(64.dp),
                     singleLine = true,
-                    label = { Text("Date") },
+                    label = null,
                     placeholder = { Text("yyyy-MM-dd") },
                     textStyle = MaterialTheme.typography.bodyLarge,
                     shape = inputShape,
@@ -236,10 +236,10 @@ fun AddTransactionScreen(
                     value = timeInput,
                     onValueChange = { timeInput = it },
                     modifier = Modifier
-                        .weight(0.9f)
-                        .height(60.dp),
+                        .weight(1f)
+                        .height(64.dp),
                     singleLine = true,
-                    label = { Text("Time") },
+                    label = null,
                     placeholder = { Text("HH:mm") },
                     textStyle = MaterialTheme.typography.bodyLarge,
                     shape = inputShape,
